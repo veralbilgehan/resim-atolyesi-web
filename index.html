@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resim Atölyesi</title>
+<style>
+:root{--bg:#211f1c;--panel:#2c2925;--panel2:#37332e;--line:#4a453e;--text:#f0ebe2;--muted:#a59d90;--accent:#e5b422;--accent-ink:#221c05}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Segoe UI",system-ui,sans-serif}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.4;cursor:default}
+header{display:flex;align-items:center;gap:18px;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:600;cursor:pointer}
+#intro{position:fixed;inset:0;z-index:50;background:#000;display:grid;place-items:center;overflow:hidden;transition:opacity .6s}
+#intro.out{opacity:0;pointer-events:none}
+#intro .box{position:relative;width:min(100vw,177.86vh);aspect-ratio:1366/768}
+#intro img{width:100%;height:100%;display:block}
+#enter{position:absolute;left:21%;top:44%;width:52%;height:52%;background:none;border:0;border-radius:18px;cursor:pointer;padding:0}
+#enter:hover,#enter:focus-visible{outline:3px solid #fff8;outline-offset:2px;background:#fff1}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border-radius:20px;padding:5px 14px;color:var(--muted)}
+.tabs button.on{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:600}
+main{padding:16px;max-width:1500px;margin:0 auto}
+.screen{display:none}.screen.on{display:block}
+h2{font-size:20px;margin:4px 0 4px}
+.lead{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;position:relative}
+.card.on{border-color:var(--accent)}
+.card.off{opacity:.5}
+.card h3{margin:8px 0 2px;font-size:15px}
+.card p{margin:0;color:var(--muted);font-size:13px}
+.card canvas{width:100%;height:70px;background:#ebe6d2;border-radius:8px;display:block}
+.card .tick{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:13px}
+.card.off .tick{display:none}
+.cards.ex{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card.ex{display:flex;flex-direction:column}
+.card.ex svg.exsk{width:100%;height:210px;border-radius:8px;background:#ebe6d2;display:block}
+.card.ex svg.exsk path{fill:none;stroke:#5b5346;stroke-width:1.6;stroke-linecap:round}
+.card.ex img{width:100%;height:210px;object-fit:cover;object-position:center 30%;border-radius:8px;background:var(--panel2)}
+.card.ex ul{margin:8px 0 10px;padding-left:18px;color:var(--muted);font-size:13px}
+.card.ex ul b{color:var(--text);font-weight:600}
+.card.ex button{margin-top:auto}
+.card.ex .meta{font-size:12px;color:var(--accent);margin-top:2px}
+.card.ex .del{margin-top:6px;font-size:12px;padding:4px;color:var(--muted)}
+.card.add{border-style:dashed;align-items:center;justify-content:center;text-align:center;min-height:260px}
+.card.add .plus{font-size:44px;line-height:1;color:var(--accent)}
+#demoBox{background:var(--panel2);border-radius:10px;padding:10px;margin-bottom:10px}
+#demoBox select{font:inherit;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px 6px;margin-left:6px}
+#demoNow{font-size:12.5px;color:var(--muted);margin-top:8px;min-height:20px}
+#demoProg{font-size:11.5px;color:var(--muted);margin-top:4px}
+.info{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px;color:var(--text);font-size:13px}
+.info b{display:block;font-size:11px;letter-spacing:.08em;color:var(--accent);margin-bottom:4px}
+.info span{display:block;margin:2px 0}
+.info .renk{display:flex;align-items:center;gap:8px;font-weight:600}
+.info .renk i{width:30px;height:30px;border-radius:6px;border:1px solid #0008;flex:none}
+.info small{display:block;font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.colors{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.crow{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.crow.off{opacity:.45}
+.crow input[type=color]{width:46px;height:46px;border:0;padding:0;background:none;cursor:pointer;flex:none}
+.crow input[type=text]{background:transparent;border:0;border-bottom:1px dashed var(--line);color:var(--text);font:inherit;font-weight:600;width:100%}
+.crow small{color:var(--muted);display:block}
+.crow label{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.opts{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 18px}
+.opt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;min-width:120px}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.opt .sw{height:44px;border-radius:6px;margin-bottom:6px;border:1px solid #0003}
+.opt small{color:var(--muted);display:block}
+.nav{display:flex;gap:10px;margin-top:20px}
+/* atölye */
+.studio{display:grid;grid-template-columns:200px minmax(0,1fr) 320px;gap:14px;align-items:start}
+@media(max-width:1050px){.studio{grid-template-columns:1fr}}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.side h4{margin:4px 0 8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tool{display:block;width:100%;text-align:left;margin-bottom:6px}
+.tool.on{border-color:var(--accent);background:#4a4024}
+.tool.rec::after{content:"önerilen";float:right;font-size:11px;color:var(--accent)}
+.side label{display:block;font-size:12px;color:var(--muted);margin-top:10px}
+.side input[type=range]{width:100%}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.row button{flex:1;padding:6px 4px;font-size:13px}
+[hidden]{display:none!important}
+#zoomBox{position:fixed;display:none;z-index:40;pointer-events:none;border:2px solid var(--text);border-radius:8px;box-shadow:0 12px 50px #000c;background:#111}
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px}
+.easels{display:flex;gap:14px;justify-content:center;align-items:flex-start;width:100%}
+.easel{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cap{font-size:12px;color:var(--muted);letter-spacing:.04em}
+#dwrap,#lwrap{max-width:100%;box-shadow:0 8px 30px #0008}
+#dwrap canvas,#lwrap canvas{width:100%;height:100%;display:block}
+.studio.custom .own,.studio.custom #curname{display:none}
+#akimBox{width:100%;text-align:center}
+#medyaStrip{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:6px 2px 2px}
+.medya{padding:7px 16px;border-radius:20px;font-size:13.5px}
+.medya.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+#akimStrip{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 8px}
+.akim{flex:none;width:92px;padding:4px;font-size:11.5px;line-height:1.2}
+.akim img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:6px;display:block;margin-bottom:4px;background:var(--panel)}
+.akim.on{border-color:var(--accent);background:#4a4024}
+#akimInfo{font-size:13px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+#akimInfo b{display:block;color:var(--accent);margin-bottom:2px}
+#akimInfo small{display:block;color:var(--muted);margin-top:2px}
+.side .legend{margin:8px 0 4px;background:var(--panel2)}
+.legend{width:100%;font-size:12.5px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.legend b{color:var(--accent);font-size:11px;letter-spacing:.08em;display:block;margin:2px 0 4px}
+.legend .lc{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;margin-top:2px}
+.legend .lc div{display:flex;align-items:center;gap:6px}
+.legend .lc button{display:flex;align-items:center;gap:6px;text-align:left;padding:4px 6px;background:transparent;border:1px solid transparent;font-size:12.5px}
+.legend .lc button.on{border-color:var(--accent);background:#4a4024}
+.legend .lc i{width:20px;height:20px;border-radius:4px;border:1px solid #0008;flex:none}
+.legend small{display:block;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(max-width:700px){.easels{flex-direction:column;align-items:center}.easel{width:100%;flex:none}}
+#wrap{position:relative;max-width:100%;box-shadow:0 8px 30px #0008;touch-action:none;cursor:crosshair}
+#wrap canvas,#wrap svg{position:absolute;inset:0;width:100%;height:100%}
+#wrap svg{pointer-events:none}
+#guide .sk{fill:none;stroke:#5b5346;stroke-width:.7;stroke-dasharray:3 2.5;opacity:.75}
+#guide .hi{fill:#ffd900;fill-opacity:.1;stroke:#ffd900;stroke-width:1.6;stroke-dasharray:5 3;opacity:1;animation:pulse 1.6s ease-in-out infinite;paint-order:stroke;filter:drop-shadow(0 0 1px #000)}
+#guide path.line.hi{fill:none;stroke-width:2.4}
+@keyframes pulse{50%{fill-opacity:0;stroke-opacity:.45}}
+.palette{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:100%}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid #0006;padding:0;position:relative}
+.swatch.on{outline:3px solid var(--text);outline-offset:2px}
+.swatch.rec::after{content:"";position:absolute;right:-3px;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+#curname{color:var(--muted);font-size:13px;min-height:1.4em;text-align:center}
+.step-now{background:var(--panel2);border-radius:10px;padding:10px;margin-bottom:10px}
+.step-now .t{color:var(--accent);font-size:12px;font-weight:600}
+.step-now h3{margin:2px 0 6px;font-size:16px}
+.step-now p{margin:0 0 8px;font-size:13.5px}
+.step-now img{width:120px;float:right;margin:0 0 6px 10px;border-radius:6px;border:1px solid var(--line);cursor:zoom-in}
+.step-now img.big{width:100%;float:none;margin:0 0 8px;cursor:zoom-out}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chip{font-size:12.5px;padding:3px 9px;border-radius:14px;display:flex;align-items:center;gap:6px}
+.chip i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid #0006}
+.steps{list-style:none;margin:0;padding:0;max-height:38vh;overflow:auto}
+.steps li{display:flex;gap:8px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:13px;align-items:baseline}
+.steps li:hover{background:var(--panel2)}
+.steps li.on{background:#4a4024}
+.steps li.done{color:var(--muted)}
+.steps li.done b::before{content:"✓ "}
+.steps li span{margin-left:auto;color:var(--muted);font-size:11.5px;white-space:nowrap}
+.bar{height:6px;background:var(--panel2);border-radius:3px;margin:8px 0 10px;overflow:hidden}
+.bar div{height:100%;background:var(--accent);width:0;transition:width .2s}
+</style>
+</head>
+<body>
+<div id="intro">
+  <div class="box"><img src="intro.jpg" alt="BilgeHan Veral · Resim Atölyesi"><button id="enter" aria-label="Resim Atölyesi: giriş yap" title="Giriş yap"></button></div>
+</div>
+<header>
+  <h1 id="home" title="Ana sayfa">Resim Atölyesi</h1>
+  <div class="tabs" id="tabs"></div>
+</header>
+<main>
+  <section class="screen" id="sEx">
+    <h2>1 · Örnek seç</h2>
+    <p class="lead">Her örneğin kendi eskizi, boyaları, teknik notları ve adım adım boyama sırası var. Birini seç; sonraki ekranlarda aletlerini, boyalarını ve tuvalini ona göre hazırlarsın.</p>
+    <div class="cards ex" id="exCards"></div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+  </section>
+  <section class="screen" id="s0">
+    <h2>2 · Aletlerini seç</h2>
+    <p class="lead">Karta tıklayarak aleti çantana ekle ya da çıkar. Önizlemeler, aletin tuvalde bıraktığı gerçek izdir. Ressamın videoda kullandığı üç fırça ilk sırada.</p>
+    <div class="cards" id="toolCards"></div>
+    <div class="nav"><button data-go="0">← Örnekler</button><button class="primary" data-go="2">Boyalara geç →</button></div>
+  </section>
+  <section class="screen" id="s1">
+    <h2>3 · Boyalarını ve renklerini belirle</h2>
+    <p class="lead">Her boyanın rengini renk kutusundan değiştirebilir, adını düzenleyebilir, kullanmayacağını paletten çıkarabilirsin. Altındaki not, o boyanın resimde nerede kullanıldığını söyler.</p>
+    <div class="colors" id="colorRows"></div>
+    <div class="nav"><button data-go="1">← Aletler</button><button id="addColor">+ Yeni renk ekle</button><button class="primary" data-go="3">Tuvale geç →</button></div>
+  </section>
+  <section class="screen" id="s2">
+    <h2>4 · Tuvalini hazırla</h2>
+    <p class="lead">Boyut, zemin rengi ve altlık çizimini seç. Örneğin kendi boyutu ve zemini önceden seçili gelir. Altlık, örneğin eskizidir; boyarken yol gösterir, kaydedilen resimde görünmez.</p>
+    <h4>Boyut</h4><div class="opts" id="optSize"></div>
+    <h4>Zemin rengi</h4><div class="opts" id="optGround"></div>
+    <h4>Seçenekler</h4>
+    <div class="opts">
+      <label class="opt"><input type="checkbox" id="optTexture" checked> Tuval dokusu</label>
+      <label class="opt"><input type="checkbox" id="optGuide" checked> Altlık eskizi</label>
+    </div>
+    <div class="nav"><button data-go="2">← Boyalar</button><button class="primary" data-go="4">Çizime başla →</button></div>
+  </section>
+  <section class="screen" id="s3">
+    <div class="studio">
+      <div class="side">
+        <h4>Aletler</h4>
+        <div id="toolList"></div>
+        <div id="layerLegend" class="legend" hidden></div>
+        <label class="own">Boyut <b id="sizeV"></b><input type="range" id="size" min="1" max="160"></label>
+        <label class="own">Yoğunluk <b id="opV"></b><input type="range" id="op" min="5" max="100"></label>
+        <div class="row own"><button id="undo" title="Ctrl+Z">Geri al</button><button id="redo">İleri al</button></div>
+        <div class="row own"><button id="toggleGuide">Altlık</button><button id="clear">Temizle</button></div>
+        <div class="row"><button id="save" class="primary">Resmi kaydet</button></div>
+      </div>
+      <div class="stage">
+        <div id="akimBox" hidden><div class="cap">MALZEME · resim hangi boyayla yapılsın</div><div id="medyaStrip"></div><div class="cap" style="margin-top:8px">RESİM AKIMI · birini seç; resim o akımın rengi, ışığı ve fırçasıyla yeniden boyanır</div><div id="akimStrip"></div><div id="akimInfo"></div></div>
+        <div class="easels">
+          <div class="easel" id="demoEasel" hidden><div class="cap">ÖRNEK · tüm katmanlar üst üste</div><div id="dwrap"><canvas id="demo"></canvas></div></div>
+          <div class="easel" id="layerEasel" hidden><div class="cap" id="layerCap">RENK KATMANI</div><div id="lwrap"><canvas id="layer"></canvas></div></div>
+          <div class="easel" id="myEasel">
+            <div id="wrap">
+              <canvas id="ground"></canvas>
+              <canvas id="paint"></canvas>
+              <svg id="guide" viewBox="0 0 300 400" preserveAspectRatio="none"></svg>
+            </div>
+          </div>
+        </div>
+        <div id="curname"></div>
+        <div class="palette" id="palette"></div>
+      </div>
+      <div class="side">
+        <h4>Ressamın sırası</h4>
+        <div class="bar"><div id="prog"></div></div>
+        <div id="demoBox" hidden>
+          <div class="row" style="margin:0 0 6px"><button id="demoPlay" class="primary">▶ Gösteriyi oynat</button></div>
+          <div class="row" style="margin:0 0 8px"><button id="demoBack" title="Bir önceki adımın başına dön">◀ Geri</button><button id="demoStopBtn" title="Gösteriyi olduğu yerde durdur">⏸ Durdur</button><button id="demoReset" title="En baştan başla">⏮ Baştan</button></div>
+          <label style="margin-top:0">Hız <select id="speed"><option value="6">Yavaş</option><option value="40" selected>Normal</option><option value="200">Hızlı</option><option value="1500">Çok hızlı</option></select></label>
+          <label style="margin-top:6px">Bekle <select id="wait"><option value="renk" selected>Her renkten sonra</option><option value="sekil">Her şekilden sonra</option><option value="asama">Her aşamadan sonra</option><option value="yok">Beklemeden</option></select></label>
+          <label style="margin-top:6px">Süre <select id="sure"><option value="3">3 saniye</option><option value="5" selected>5 saniye</option><option value="10">10 saniye</option><option value="20">20 saniye</option><option value="60">1 dakika</option><option value="0">Düğmeye basana kadar</option></select></label>
+          <div id="demoNow">Uygulama her katmandan önce hangi fırçayı ve hangi boyayı kullanacağını gösterir, sonra boyar.</div><div id="demoProg"></div>
+        </div>
+        <div class="step-now" id="stepNow"></div>
+        <div class="row" style="margin:0 0 10px"><button id="prev">← Önceki</button><button id="next" class="primary">Adımı bitir →</button></div>
+        <ul class="steps" id="stepList"></ul>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+"use strict";
+const REF=false; // false: referans kareler olmadan çalış (herkese açık yayın sürümü)
+const $=s=>document.querySelector(s), rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---------- veriler ---------- */
+const TOOLS=[
+ {id:'kalin',ad:'Kalın kıl fırça',size:70,op:90,min:20,max:160,not:'Sürmez, tamponlar. Yaprak kütleleri için; kılların izi yaprak dokusunu verir. Sopa gibi, yatay tut.'},
+ {id:'kucuk',ad:'Küçük fırça',size:26,op:95,min:8,max:70,not:'Ucunda az ve yoğun boya; her dokunuş bir yaprak öbeği. Dal uçları, ışık vuruşları, çiçekler.'},
+ {id:'ince',ad:'İnce çizgi fırçası',size:7,op:100,min:2,max:24,not:'Gövde, dal, ot sapı. Yavaş çekince kalın, hızlanınca incelir; gövdeyi aşağıdan yukarı tek çekişte çiz.'},
+ {id:'yassi',ad:'Yassı fırça',size:64,op:85,min:16,max:160,not:'Geniş, uzun çekişler. Gökyüzü ve yol gibi büyük alanlar; kıl çizgileri yüzeyde kalır.'},
+ {id:'spatula',ad:'Spatula',size:44,op:100,min:12,max:120,not:'Kalın, örtücü, keskin kenarlı boya. Bulut ışıkları ve yoldaki teker izleri için.'},
+ {id:'harman',ad:'Harmanlayıcı',size:60,op:60,min:16,max:140,not:'Boya eklemez; tuvaldeki yaş boyayı sürükleyip yumuşatır. Sert şeritleri eritmek için.'},
+ {id:'kalem',ad:'Kurşun kalem',size:2,op:80,min:1,max:8,not:'Eskiz çizgisi. Kendi kompozisyonunu kurmak ya da altlığa ekleme yapmak için.'},
+ {id:'fuzen',ad:'Füzen (kömür)',size:9,op:80,min:3,max:30,not:'Kalın, tozlu, kırık eskiz çizgisi. Portrede kafa ve omuz planlarını hızlı, köşeli çizgilerle kurmak için.'},
+ {id:'silgi',ad:'Bez (silgi)',size:40,op:100,min:6,max:140,not:'Boyayı zemine kadar siler.'},
+ {id:'sulu',ad:'Sulu boya fırçası',size:60,op:70,min:14,max:160,not:'Saydam, sulu leke. Üst üste geçtikçe koyulaşır; kenarları yumuşaktır, kâğıdın beyazı ışık olarak kalır.'},
+ {id:'kuru',ad:'Kuru boya kalemi',size:18,op:90,min:4,max:60,not:'İnce paralel taramalar. Rengi tek seferde değil, taramaları üst üste bindirerek kurarsın.'},
+ {id:'pastel',ad:'Yağlı pastel',size:30,op:100,min:8,max:90,not:'Mumlu, parlak, kalın çizgi. Kâğıt dokusu aralardan görünür.'},
+ {id:'soft',ad:'Soft pastel',size:36,op:80,min:8,max:100,not:'Tebeşirimsi, tozlu, yumuşak iz. Zemin rengi aralardan görünür.'},
+];
+const M_COLORS=[
+ {id:'gok',ad:'Gök mavisi',hex:'#3d97d3',yer:'Gökyüzü; üstte doygun, ufka doğru beyazla açılır.'},
+ {id:'beyaz',ad:'Bulut beyazı',hex:'#f6f5ee',yer:'Bulutların ışıklı yüzü, ufuk açıklığı, beyaz çiçekler.'},
+ {id:'lila',ad:'Bulut lilası',hex:'#b9a8cf',yer:'Bulut gölgeleri; yeşile karşı serin denge.'},
+ {id:'uzak',ad:'Uzak mavi-gri',hex:'#8fa3b8',yer:'Ufuktaki tepeler; derinlik için soluk.'},
+ {id:'tarla',ad:'Tarla sarısı',hex:'#e5b422',yer:'Sarı tarla, sol çalının üstü, sarı çiçekler.'},
+ {id:'koyu',ad:'Koyu yeşil',hex:'#14261a',yer:'Ağaçların dip kütlesi, sol alt köşe. Açık renkler bunun üstüne oturur.'},
+ {id:'orta',ad:'Orta yeşil',hex:'#3d6b2c',yer:'Ağaç kütlelerinin ana tonu, tarla kenarı, ot şeridi.'},
+ {id:'oksit',ad:'Sarı-oksit yeşil',hex:'#a89220',yer:'Sağ ağacın tepesi, sol ağacın üstü; sonbahar etkisi.'},
+ {id:'elma',ad:'Açık elma yeşili',hex:'#8fb44e',yer:'Sağ ağacın alt-sol dalları; ince ve yarı saydam.'},
+ {id:'limon',ad:'Limon sarısı-yeşil',hex:'#d9e04a',yer:'Son kat ışık vuruşları; yaprak öbeklerinin üst yüzü.'},
+ {id:'yol',ad:'Yol sarısı',hex:'#e3c680',yer:'Toprak yol; geniş, uzun, kavisli çekişler.'},
+ {id:'golge',ad:'Yol gölgesi',hex:'#8c8499',yer:'Ağaç gölgelerinin yola düştüğü yerler; yatay vuruşlar.'},
+ {id:'turuncu',ad:'Turuncu',hex:'#e07a1f',yer:'Sol çalının içinde sıcak vurgu.'},
+ {id:'krem',ad:'Gövde kremi',hex:'#ece4cf',yer:'Huş gövdelerinin ışıklı yüzü.'},
+ {id:'kizil',ad:'Kızıl-kahve',hex:'#6e3423',yer:'Gövdelerin gölge yüzü, yoldaki teker izi.'},
+ {id:'siyahk',ad:'Siyah-kahve',hex:'#2a1c16',yer:'İnce dallar, en koyu gövde çizgileri.'},
+ {id:'magenta',ad:'Çiçek kızılı',hex:'#c2185b',yer:'Çiçek noktaları.'},
+ {id:'turkuaz',ad:'Turkuaz',hex:'#2bb5b0',yer:'Çiçek noktaları.'},
+];
+const SIZES=[
+ {id:'d34',ad:'Dikey 3:4',w:900,h:1200,not:'Klasik tuval'},
+ {id:'d916',ad:'Dikey 9:16',w:810,h:1440,not:'Videodaki oran'},
+ {id:'kare',ad:'Kare',w:1080,h:1080,not:''},
+ {id:'y43',ad:'Yatay 4:3',w:1200,h:900,not:'Eskiz yatay gerilir'},
+];
+const GROUNDS=[
+ {id:'ekru',ad:'Ekru',hex:'#ebe6d2',not:'Videodaki zemin'},
+ {id:'beyaz',ad:'Beyaz',hex:'#fbfaf6',not:''},
+ {id:'gri',ad:'Sıcak gri',hex:'#bdb4a4',not:'Tonlanmış zemin'},
+ {id:'okra',ad:'Açık okra',hex:'#dcc394',not:'Sıcak alt ton'},
+ {id:'sgri',ad:'Soğuk gri',hex:'#a3a8ae',not:'Portre zemini'},
+];
+/* altlık şekilleri (300×400) */
+const M_SHAPES={
+ gok:'M0,0H300V202H0Z',
+ bulut1:'M150,72q15,-25 40,-12q25,-18 40,8q22,2 18,26q-8,18 -30,14q-20,14 -42,2q-26,4 -26,-18q-8,-12 0,-20z',
+ bulut2:'M138,142q20,-14 44,-4q24,-8 34,10q4,16 -16,20q-30,10 -56,0q-14,-10 -6,-26z',
+ tepe:'M95,198q40,-10 80,-4q40,-8 125,2V210H95Z',
+ tarla:'M88,214L300,218V250L200,240Q140,232 88,236Z',
+ solAgac:'M0,0H95q30,30 20,60q40,20 35,50q-25,10 -35,30q15,30 -10,60q-10,30 -40,36H0Z',
+ solUc:'M105,90q40,10 46,45q-6,35 -40,45q-12,-45 -6,-90z',
+ sagTepe:'M300,25q-45,-10 -60,25q-22,22 -10,50q30,18 70,5Z',
+ sagAlt:'M222,105q-35,25 -27,60q0,25 25,40q22,-10 25,-45q0,-35 -23,-55z',
+ sagDip:'M222,205q5,30 30,48H300V190q-40,25 -78,15z',
+ sagAgac:'M300,25q-45,-10 -60,25q-30,20 -20,50q-35,25 -25,60q-5,30 30,45q5,35 30,48H300Z',
+ yol:'M88,240Q170,250 235,290Q275,330 300,400H25Q95,330 150,286Q130,256 88,247Z',
+ solCali:'M0,246q40,-18 80,-4q30,14 28,45q-10,35 -50,40H0Z',
+ sagOt:'M300,256q-35,0 -45,30q-5,35 20,55H300Z',
+ solKose:'M0,330q50,10 62,70H0Z',
+ solGovde:'M30,240Q34,150 50,62M45,240Q50,160 72,88M58,240Q60,180 54,120M50,150Q80,140 100,150',
+ sagGovde:'M278,256Q270,170 262,66M270,170Q250,150 232,142M268,120Q282,100 292,80',
+ otSerit:'M150,286Q178,330 170,400',
+ tekerIz:'M205,290Q250,330 262,400',
+};
+const M_LINES=['solGovde','sagGovde','otSerit','tekerIz'];
+const M_SKETCH=['bulut1','bulut2','tepe','tarla','solAgac','sagAgac','yol','solCali','sagOt','solGovde','sagGovde'];
+const M_STEPS=[
+ {t:'Kayıt öncesi',ad:'Gökyüzü',tools:['yassi'],cols:['gok','beyaz'],reg:['gok'],ref:0,ne:'En alttaki katman. Üstte doygun maviyle başla, yatay geniş çekişlerle in; ufka yaklaşırken beyaz karıştırıp açıl. Bulut yerlerini boş bırakmana gerek yok.'},
+ {t:'Kayıt öncesi',ad:'Bulutlar',tools:['kucuk','spatula','harman'],cols:['beyaz','lila'],reg:['bulut1','bulut2'],ref:0,ne:'Bulutların üst ve sağ yüzüne kalın beyaz koy. Alt ve iç kısımlara lila gölge ekle, sonra kenarları harmanlayıcıyla yumuşat.'},
+ {t:'Kayıt öncesi',ad:'Uzak tepeler',tools:['kucuk'],cols:['uzak','orta'],reg:['tepe'],ref:0,ne:'Ufukta soluk mavi-gri ince bir şerit. Altına birkaç küçük orta yeşil dokunuşla uzak ağaç hattını koy.'},
+ {t:'Kayıt öncesi',ad:'Sarı tarla',tools:['kucuk','yassi'],cols:['tarla','orta'],reg:['tarla'],ref:0,ne:'Tarlayı sarıyla doldur. Alt kenarında kısa dikey vuruşlarla yeşile geç; ot dokusu bu vuruşlardan oluşur.'},
+ {t:'8,5 – 14 sn',ad:'Sol ağaç: koyu kütle',tools:['kalin'],cols:['koyu','orta','oksit'],reg:['solAgac'],ref:1,ne:'Kayıtta ilk sürülen boya. Fırçayı vur-kaldır; sürme. Yukarıdan aşağı in, kenarlarda dışa doğru küçük çıkıntılar bırak. Tepeye biraz oksit sarı, alta en koyu yeşil.'},
+ {t:'14,5 – 15 sn',ad:'Sol ağaç: dal uçları',tools:['kucuk'],cols:['orta'],reg:['solUc'],ref:2,ne:'Kütlenin sağ kenarından göğe doğru uzanan birkaç dal ucu çıkar. Hafif, seyrek dokunuşlar.'},
+ {t:'15,5 – 17 sn',ad:'Sağ ağaç: tepe',tools:['kalin'],cols:['oksit'],reg:['sagTepe'],ref:3,ne:'Aynı kalın fırça, bu kez sarı-oksit yeşil. Tepeden başla, tamponlayarak aşağı ve sola doğru genişlet.'},
+ {t:'17 – 18,5 sn',ad:'Sağ ağaç: açık yeşil dallar',tools:['kalin'],cols:['elma'],reg:['sagAlt'],ref:4,ne:'Alt-sol tarafa açık elma yeşili. Yoğunluğu düşür; arkadaki gök hafifçe görünsün.'},
+ {t:'19 – 19,5 sn',ad:'Sağ ağaç: koyu dip',tools:['kalin'],cols:['koyu'],reg:['sagDip'],ref:5,ne:'Ağacın dibine siyaha yakın yeşil. Bu koyuluk ağacı yere bağlar ve sonraki ışıklara zemin olur.'},
+ {t:'20 sn (kesme)',ad:'Yol, gölgeler ve çalılar',tools:['yassi','kalin'],cols:['yol','golge','tarla','turuncu','orta'],reg:['yol','solCali','sagOt'],ref:6,ne:'Yolu ufuktan öne doğru uzun, kavisli çekişlerle çek. Ağaç gölgelerinin düştüğü yerlere yatay gri-mor vuruşlar. Sol çalıyı sarı, altını turuncu; sağ ot kümesini yeşil tamponla.'},
+ {t:'20,5 – 23,5 sn',ad:'Sağ ağaç: gövde ve dallar',tools:['ince'],cols:['siyahk','krem','kizil'],reg:['sagGovde'],ref:7,ne:'Önce koyu dallar: gövdeden dışa hızlı, kırık çizgiler. Sonra krem rengiyle huş gövdesini aşağıdan yukarı tek çekişte. En son gölge yüzüne kızıl-kahve.'},
+ {t:'24 – 28 sn',ad:'Sağ ağaç: yaprak öbekleri',tools:['kucuk'],cols:['limon','oksit'],reg:['sagAgac'],ref:8,ne:'Dalların üst yüzüne, ışığın geldiği tarafa küçük sarı-yeşil öbekler diz. Her dokunuş bir öbek.'},
+ {t:'28,5 – 29 sn',ad:'Sol ağaç: gövdeler',tools:['ince'],cols:['krem','kizil','siyahk'],reg:['solGovde'],ref:9,ne:'Koyu kütlenin üstüne açık renkli ince gövdeler. Yukarı çıktıkça hızlan ki çizgi incelsin. Birkaç yatay dal ekle.'},
+ {t:'29,5 – 34 sn',ad:'Sol ağaç: ışık vuruşları',tools:['kucuk'],cols:['limon'],reg:['solAgac'],ref:10,ne:'Limon sarısıyla tepeden başla, aşağı indikçe vuruşları seyrelt. Koyu kütlenin tamamını kapatma; koyu aralıklar derinliği verir.'},
+ {t:'34,5 sn (kesme)',ad:'Çiçekler ve yolu yumuşatma',tools:['kucuk','harman'],cols:['magenta','turkuaz','beyaz','tarla'],reg:['solCali','sagOt','yol'],ref:11,ne:'Çalıların üstüne küçük noktalarla çiçekler: kızıl, turkuaz, beyaz, sarı. Sonra harmanlayıcıyla yoldaki sert şeritleri yol yönünde erit.'},
+ {t:'35 – 36,5 sn',ad:'Ot şeridi ve teker izi',tools:['kucuk','spatula'],cols:['orta','kizil'],reg:['otSerit','tekerIz'],ref:12,ne:'Yolun ortasına, yolun kıvrımını izleyen ince yeşil ot şeridi. Sağ tarafa kahverengi teker izi.'},
+ {t:'37 – 37,5 sn',ad:'Son ayrıntılar',tools:['ince','kalin'],cols:['koyu','limon','krem'],reg:['solKose','solCali'],ref:13,ne:'Sol alt köşeyi koyulaştır, üstüne ince fırçayla açık ot sapları çek. Geri çekil ve bak; eksik gördüğün ışıkları ekle.'},
+];
+
+/* ---------- örnekler ---------- */
+const EXAMPLES=[
+{id:'manzara',ad:'Kır yolu manzarası',alt:'Yağlıboya manzara · 17 adım · 38 sn video',vb:'0 0 300 400',size:'d34',ground:'ekru',
+ teknik:[['Sıra','Uzaktan yakına, koyudan açığa, kütleden ayrıntıya.'],['Teknik','Yaprak kütleleri tamponlanır, sürülmez. Işıklar en son, koyunun üstüne.'],['Zemin','Ekru tuval, kurşun kalem eskiz.'],['Aletler','Kalın kıl fırça, küçük fırça, ince çizgi fırçası, yassı fırça.']],
+ colors:M_COLORS,shapes:M_SHAPES,lines:M_LINES,sketch:M_SKETCH,steps:M_STEPS},
+
+{id:'agac',ad:'Tek ağaç etüdü',alt:'Ağaç çalışması · 8 adım · 10 sn video',vb:'0 0 300 400',size:'d34',ground:'beyaz',
+ teknik:[['Sıra','Çizgi eskiz, koyu kütle, gövde, dallar, en son üç kademe ışık.'],['Teknik','Yaprak öbekleri kat kat: koyu zeytin altta, açık yeşil üstte. Işık soldan gelir; sağ taraf koyu ve serin kalır.'],['Zemin','Beyaz tuval, mürekkep ya da ince fırçayla bulut biçimli dış hat.'],['Aletler','İnce çizgi fırçası, kalın kıl fırça, küçük fırça.']],
+ colors:[
+  {id:'siyahk',ad:'Siyah-kahve',hex:'#2a1c16',yer:'Eskiz çizgisi, gövdenin gölge yüzü, ince dallar.'},
+  {id:'zkoyu',ad:'Koyu zeytin',hex:'#2b3018',yer:'Yaprak kütlelerinin altı ve iç gölgeleri. İlk sürülen boya.'},
+  {id:'zeytin',ad:'Zeytin yeşili',hex:'#4f5524',yer:'Üç yaprak katının ana kütlesi.'},
+  {id:'serin',ad:'Serin gölge yeşili',hex:'#2f5a3a',yer:'Ağacın sağ, gölgede kalan yarısı.'},
+  {id:'orta',ad:'Orta yeşil',hex:'#4f7a2a',yer:'Koyu ile ışık arasındaki geçiş öbekleri.'},
+  {id:'acik',ad:'Açık yeşil',hex:'#86b83a',yer:'Öbeklerin üst yüzü; tepeden aşağı doğru.'},
+  {id:'sariy',ad:'Sarı-yeşil ışık',hex:'#c3d95a',yer:'En son, en parlak vuruşlar; tepe ve sol kenar.'},
+  {id:'kabuk',ad:'Kabuk okrası',hex:'#b98a4e',yer:'Gövdenin ışıklı yüzü; dikey çizgiler.'},
+  {id:'kizil',ad:'Kızıl-kahve',hex:'#6e3f24',yer:'Gövdenin orta tonu, kalın dallar.'},
+  {id:'kabukI',ad:'Kabuk ışığı',hex:'#dcc09a',yer:'Gövdede ve açıkta kalan dallarda ince ışık çizgileri.'}],
+ shapes:{
+  ust:'M120,100q5,-45 60,-48q55,0 62,45q-5,40 -60,42q-55,0 -62,-39z',
+  orta:'M40,190q10,-45 115,-45q110,0 115,45q-10,42 -115,42q-105,0 -115,-42z',
+  alt:'M62,285q10,-45 108,-45q100,0 106,45q-10,45 -106,45q-100,0 -108,-45z',
+  govde:'M166,235L160,350Q150,362 138,368H216Q203,360 198,348L192,235Z',
+  dallar:'M176,240Q170,180 150,140M184,240Q190,170 206,120M178,200Q140,190 108,172M186,210Q220,200 246,182M172,292Q140,280 108,292M190,286Q225,280 252,292',
+  yer:'M100,386Q170,368 272,362',
+  isik:'M42,200q8,-70 80,-110q20,-40 70,-40q10,60 -30,110q-20,50 -70,60q-40,0 -50,-20z'},
+ lines:['dallar','yer'],sketch:['ust','orta','alt','govde','dallar','yer'],
+ steps:[
+  {t:'0 – 0,5 sn',ad:'Çizgi eskiz',tools:['ince','kalem'],cols:['siyahk'],reg:['ust','orta','alt','govde','yer'],ref:0,ne:'Yaprakları tek tek değil, üç kat bulut gibi öbek olarak çiz: tepe, orta, alt. Gövdeyi iki uzun çizgiyle, dibe doğru genişleterek indir. Yere uzun bir gölge çizgisi at.'},
+  {t:'1 sn',ad:'Üst ve orta kütle',tools:['kalin'],cols:['zeytin','zkoyu'],reg:['ust','orta'],ref:1,ne:'Koyu zeytinle üst iki katı tamponlayarak doldur. Dış hattı düz bırakma; kenarlarda yaprak çıkıntıları olsun. Katların arasında gök boşlukları bırak.'},
+  {t:'1,5 sn',ad:'Alt kütle ve gövde gölgesi',tools:['kalin','ince'],cols:['zkoyu','siyahk'],reg:['alt','govde'],ref:2,ne:'Alt katı en koyu tonla doldur. Gövdenin gölge tarafını siyah-kahveyle tek seferde indir.'},
+  {t:'2 – 2,5 sn',ad:'Gövde kabuğu',tools:['ince','kucuk'],cols:['kabuk','kizil','kabukI'],reg:['govde'],ref:3,ne:'Gövdeye okra ve kızıl-kahveyle dikey, hafif dalgalı çizgiler çek. Işıklı yüz solda, açık; sağa doğru koyulaş. Kökleri yere doğru yay.'},
+  {t:'3 – 3,5 sn',ad:'Dallar',tools:['ince'],cols:['siyahk','kizil','kabukI'],reg:['dallar'],ref:4,ne:'Gövdeden yaprak katlarının içine uzanan dalları çiz. Dallar katların arasındaki boşluklarda görünür, kütlenin içinde kaybolur. Birkaçına açık kabuk rengiyle ışık ver.'},
+  {t:'4 – 5 sn',ad:'Tepe ışıkları',tools:['kucuk'],cols:['acik','orta'],reg:['ust'],ref:5,ne:'Açık yeşille tepeden başla. Her dokunuş küçük bir yaprak öbeği; öbeklerin üstü açık, altı koyu kalsın. Sol taraf daha ışıklı.'},
+  {t:'5,5 – 6,5 sn',ad:'Orta ve alt kat ışıkları',tools:['kucuk'],cols:['orta','acik','serin'],reg:['orta','alt'],ref:6,ne:'Aynı öbekleri orta ve alt kata indir. Sağ yarıyı serin gölge yeşiliyle bırak; ışık ağacı soldan sarıyor.'},
+  {t:'7 – 9,5 sn',ad:'Son ışıklar',tools:['kucuk','ince'],cols:['sariy','kabukI'],reg:['isik','yer'],ref:7,ne:'Sarı-yeşille yalnızca tepeye ve sol kenara en parlak vuruşları koy; az olsun. Yer gölgesini ve gövde dibini son kez netleştir.'}]},
+
+{id:'portre',ad:'Gözlüklü portre',alt:'Yağlıboya portre · 15 adım · 63 sn video',vb:'0 0 300 400',size:'d34',ground:'sgri',
+ teknik:[['Sıra','Füzen eskiz, ten orta tonu, gölge planları, yüz hatları, saç, giysi, arka plan, gözlük ve ışıklar.'],['Teknik','Yüz, düz ve köşeli renk lekeleriyle kurulur; çizgiyle değil planla. Geçişler sonradan yumuşatılır. Gözlük en son, tek çizgide.'],['Zemin','Orta ton soğuk gri; açık ve koyu aynı anda okunur.'],['Aletler','Füzen, yassı fırça, küçük fırça, ince çizgi fırçası, spatula.']],
+ colors:[
+  {id:'fuz',ad:'Füzen siyahı',hex:'#3a3330',yer:'Eskiz çizgileri.'},
+  {id:'ten',ad:'Ten orta tonu',hex:'#c99a72',yer:'Yüzün ışıklı ön yüzü; ilk sürülen boya.'},
+  {id:'tenA',ad:'Açık ten',hex:'#e6c3a6',yer:'Elmacık kemiği, burun sırtı, alın ışıkları.'},
+  {id:'pembe',ad:'Ten pembesi',hex:'#d99a8c',yer:'Kulak, yanak, burun ucu.'},
+  {id:'tenG',ad:'Ten gölgesi',hex:'#9a6a43',yer:'Yüzün yan düzlemi, çene altı, boyun.'},
+  {id:'tenK',ad:'Koyu ten',hex:'#6e4a30',yer:'Göz çukuru, burun altı, saç dibi gölgesi.'},
+  {id:'dudak',ad:'Dudak kızılı',hex:'#b8575a',yer:'Dudaklar, kulak içi.'},
+  {id:'sac',ad:'Saç siyahı',hex:'#1c1a1c',yer:'Saç kütlesi, kaşlar, kirpik çizgisi, gözlük çerçevesi.'},
+  {id:'sacI',ad:'Saç parıltısı',hex:'#6f7f8f',yer:'Saçta gri-mavi ışık tutamları.'},
+  {id:'yaka',ad:'Yaka koyusu',hex:'#2a2024',yer:'Kapüşonlu yaka; ceketin altındaki koyu giysi.'},
+  {id:'sari',ad:'Ceket sarısı',hex:'#d9a514',yer:'Ceketin ana kütlesi; geniş, kalın çekişler.'},
+  {id:'sariI',ad:'Ceket ışığı',hex:'#edc23a',yer:'Omuz ve yaka kenarı.'},
+  {id:'siena',ad:'Yanık siena',hex:'#7a4318',yer:'Ceket kıvrımlarının gölgesi.'},
+  {id:'arka',ad:'Arka plan grisi',hex:'#c9ccd0',yer:'Arka plan; saçın kenarını keserek.'},
+  {id:'beyaz',ad:'Beyaz',hex:'#f2f0ea',yer:'Gözlük camı parıltısı, yakadaki ince çizgiler.'}],
+ shapes:{
+  arka:'M0,0H300V400H0Z',
+  kafa:'M85,150Q76,62 150,40Q232,28 260,92Q264,140 250,170Q244,212 215,228Q186,236 160,214Q124,190 110,166Z',
+  yuz:'M150,78Q205,56 246,86Q254,130 246,166Q240,206 215,226Q186,230 166,206Q150,170 150,78Z',
+  yuzGolge:'M126,120Q150,110 152,160Q160,206 190,226Q186,262 176,292Q150,262 130,226Q120,170 126,120Z',
+  kulak:'M102,126q18,-10 24,10q4,25 -8,42q-14,-4 -16,-52z',
+  sac:'M80,152Q68,70 150,38Q236,24 263,96Q250,80 215,78Q176,70 150,86Q130,110 128,126Q112,118 100,150Q92,172 85,162Z',
+  yaka:'M70,236Q110,206 135,226Q160,270 180,300Q200,260 226,226Q246,236 262,400H215Q195,340 180,320Q130,290 70,236Z',
+  ceket:'M0,300Q30,242 70,236Q130,290 180,320L215,400H0ZM246,236Q282,240 300,270V400H262Z',
+  hatlar:'M186,128h22M238,128h16M182,114q14,-7 28,-2M236,114q12,-5 22,1M232,130Q252,166 236,173Q226,175 220,170M204,196Q222,192 238,197',
+  gozluk:'M176,130a22,20 0 1,0 44,0a22,20 0 1,0 -44,0M230,130a20,19 0 1,0 40,0a20,19 0 1,0 -40,0M220,128L230,128M176,126L128,122'},
+ lines:['hatlar','gozluk'],sketch:['kafa','yuz','kulak','yaka','ceket','hatlar'],
+ steps:[
+  {t:'0 – 5 sn',ad:'Füzen eskiz',tools:['fuzen','kalem'],cols:['fuz'],reg:['kafa','yaka','hatlar'],ref:0,ne:'Kafayı oval değil, köşeli planlarla kur: kafatası, yüz maskesi, çene. Göz, burun, ağız hizalarını kısa çizgilerle işaretle. Omuzları ve yakayı uzun düz çizgilerle indir.'},
+  {t:'1 – 9 sn',ad:'Ten orta tonu',tools:['yassi'],cols:['ten'],reg:['yuz'],ref:1,ne:'Yanaktan başla, alına ve burna doğru düz lekelerle yayıl. Göz boşluğunu boş bırak. Fırçayı sürterek değil, koyarak kullan; her çekiş bir düzlem.'},
+  {t:'9 – 10 sn',ad:'Kulak ve yanak pembesi',tools:['yassi','kucuk'],cols:['pembe'],reg:['kulak'],ref:2,ne:'Kulağı tek pembe lekeyle koy. Aynı rengi yanağa ve burun ucuna hafifçe dokundur.'},
+  {t:'11 – 17 sn',ad:'Gölge planları',tools:['yassi'],cols:['tenG','tenK'],reg:['yuzGolge'],ref:3,ne:'Yüzün yan düzlemini, çene altını ve boynu daha koyu tenle kapat. Işıklı yüzle gölge arasındaki sınır keskin kalsın; kafanın hacmini bu sınır verir.'},
+  {t:'17 – 24 sn',ad:'Yüz hatları',tools:['kucuk','ince'],cols:['tenK','dudak','pembe'],reg:['hatlar','kulak'],ref:4,ne:'Göz çukurunu, burun altını ve dudak çizgisini koyu tenle yerleştir. Ayrıntı çizme, leke koy. Kulağın içine koyu bir vurgu.'},
+  {t:'25 – 30 sn',ad:'Saç',tools:['yassi','kalin'],cols:['sac'],reg:['sac'],ref:5,ne:'Alından dışa doğru kısa, kararlı çekişler. Kenarlarda boyayı azalt, kuru fırçayla tutamları dağıt. Yüzün üstüne düşen perçemleri tek tek bırak.'},
+  {t:'30 – 33 sn',ad:'Kaş, göz ve çene çizgisi',tools:['ince'],cols:['sac','tenK'],reg:['hatlar'],ref:6,ne:'Kaşları ve üst kirpik çizgisini tek çekişte koy. Çene altını koyu bir çizgiyle boyundan ayır.'},
+  {t:'34 – 37 sn',ad:'Koyu yaka',tools:['yassi'],cols:['yaka','sac'],reg:['yaka'],ref:7,ne:'Yakayı boyundan aşağı uzun, kırık çekişlerle indir. Araları kapatma; zemin grisi kumaşın ışığı gibi görünsün.'},
+  {t:'38 – 40 sn',ad:'Sarı ceket',tools:['yassi','spatula'],cols:['sari','sariI'],reg:['ceket'],ref:8,ne:'En geniş alet, en kalın boya. Omuz yönünde, çapraz ve cesur çekişler. Kenarları düzeltme.'},
+  {t:'41 – 43 sn',ad:'Ceket kıvrımları',tools:['yassi','kucuk'],cols:['siena'],reg:['ceket'],ref:9,ne:'Yanık sienayla yaka altına ve kol kıvrımlarına birkaç koyu leke. Sarının içine fazla karıştırma.'},
+  {t:'43 – 45 sn',ad:'Arka plan',tools:['spatula','yassi'],cols:['arka','beyaz'],reg:['arka'],ref:10,ne:'Açık griyi saçın ve omzun kenarına kadar getir; kafanın dış hattını arka planla kes. Çekişler görünür ve farklı yönlerde kalsın.'},
+  {t:'46 – 50 sn',ad:'Burun ve göz çevresi',tools:['kucuk'],cols:['tenK','ten','pembe'],reg:['hatlar'],ref:11,ne:'Yakından çalış: burun kanadı, burun deliği, göz kapağı. Sert kenarları harmanlayıcıyla hafifçe yumuşat.'},
+  {t:'51 – 55 sn',ad:'Gözlük',tools:['ince'],cols:['sac','beyaz'],reg:['gozluk'],ref:12,ne:'Çerçeveyi tek, ince, kesintisiz çizgiyle çiz; iki cam, köprü, sap. Cam kenarına tek beyaz parıltı.'},
+  {t:'54 – 59 sn',ad:'Dudak ve ten ışıkları',tools:['kucuk'],cols:['dudak','tenA','pembe'],reg:['yuz'],ref:13,ne:'Dudaklara kızıl, alt dudağa açık bir dokunuş. Elmacık kemiğine, burun sırtına ve alına açık ten ışıkları.'},
+  {t:'60 – 63 sn',ad:'Son dokunuşlar',tools:['ince','kucuk'],cols:['sacI','beyaz','sariI'],reg:['sac','yaka'],ref:14,ne:'Saça gri-mavi parıltı tutamları, yakaya birkaç ince beyaz çizgi, ceket kenarına ışık. Geri çekil ve bak.'}]},
+
+{id:'sargent',ad:'Sakallı portre (Sargent\'tan)',alt:'Usta kopyası · 12 adım · 26 sn video',vb:'0 0 400 300',size:'y43',ground:'beyaz',
+ teknik:[['Sıra','Kalem eskiz, yanık siena alt boyama, arka plan, ten, koyular, gözler, sakal.'],['Teknik','Önce ince ve sulu tek renk alt boyama; üstüne kalın, örtücü ten. Arka plan iki kez: önce zeytin, sonra siyah. Sakal en son, koyunun üstüne açık kıvrık çizgilerle.'],['Zemin','Beyaz tuval, kurşun kalem eskiz.'],['Aletler','Kurşun kalem, yassı fırça, küçük fırça, ince çizgi fırçası, harmanlayıcı.'],['Not','Video yalnızca yakın planlardan oluşuyor; kompozisyonun tamamı görünmediği için eskiz yaklaşık.']],
+ colors:[
+  {id:'siena',ad:'Yanık siena',hex:'#9a4a1c',yer:'Alt boyama: saç, sakal ve gölgelerin ilk katı.'},
+  {id:'umbra',ad:'Ham umbra',hex:'#5a4630',yer:'Sakalın ve yüzün gölge kütleleri, kaşlar, göz çukurları.'},
+  {id:'okra',ad:'Okra',hex:'#c9a05a',yer:'Sakalın sıcak orta tonu.'},
+  {id:'zemin',ad:'Zeytin-umbra',hex:'#6b6040',yer:'Arka planın ilk katı.'},
+  {id:'siyah',ad:'Siyah',hex:'#121110',yer:'Arka planın ikinci katı; yüzün kenarını keser.'},
+  {id:'ten',ad:'Pembe ten',hex:'#e3a596',yer:'Yanak, alın, burun; düz lekelerle.'},
+  {id:'tenA',ad:'Açık ten',hex:'#f3d3c2',yer:'Alın, burun sırtı, elmacık kemiği ışıkları.'},
+  {id:'tenG',ad:'Ten gölgesi',hex:'#b8785f',yer:'Yüzün gölge tarafı, göz altı.'},
+  {id:'kizil',ad:'Sıcak kızıl',hex:'#c85a50',yer:'Kulak, burun kanadı, dudak, yanak vurgusu.'},
+  {id:'gri',ad:'Sakal grisi',hex:'#b9b2a2',yer:'Sakal ve bıyıkta açık kıvrık çizgiler.'},
+  {id:'krem',ad:'Sakal kremi',hex:'#e6dcc4',yer:'Sakaldaki en açık tutamlar.'},
+  {id:'goz',ad:'Göz gri-mavisi',hex:'#6f8296',yer:'İris.'},
+  {id:'beyaz',ad:'Yaka beyazı',hex:'#f5f3ec',yer:'Gömlek yakası, gözdeki ışık noktası.'},
+  {id:'laci',ad:'Lacivert',hex:'#1e2740',yer:'Ceket.'}],
+ shapes:{
+  arka:'M0,0H400V300H0Z',
+  kafa:'M150,120Q150,40 205,38Q262,40 258,120Q256,160 245,185Q205,215 165,185Q152,160 150,120Z',
+  sac:'M148,115Q140,35 205,28Q270,32 262,115Q255,75 205,70Q160,72 148,115Z',
+  yuz:'M158,95Q205,70 252,95Q256,130 248,160Q205,150 162,160Q154,130 158,95Z',
+  kulak:'M148,112q-14,-2 -12,20q4,22 16,24zM262,112q14,-2 12,20q-4,22 -16,24z',
+  sakal:'M152,150Q175,166 205,160Q238,166 258,150Q262,206 235,236Q205,256 175,236Q148,206 152,150Z',
+  biyik:'M168,172Q190,158 205,168Q222,158 242,172',
+  gozler:'M172,113q12,-8 24,0M216,113q12,-8 24,0M168,100q14,-8 30,-2M214,98q16,-6 30,2M205,110Q200,140 196,150q9,6 18,0',
+  yaka:'M165,236L140,300H270L245,236Q205,262 165,236Z',
+  ceket:'M0,300Q40,252 150,240L140,300ZM400,300Q360,252 260,240L270,300Z'},
+ lines:['biyik','gozler'],sketch:['kafa','sac','kulak','sakal','biyik','gozler','yaka','ceket'],
+ steps:[
+  {t:'7 – 9 sn',ad:'Kurşun kalem eskiz',tools:['kalem'],cols:['umbra'],reg:['kafa','sakal','gozler','kulak'],ref:0,ne:'Beyaz tuvale ince çizgiyle kafa, kulaklar, göz ve burun hizaları, bıyık ve sakal kütlesi. Sakalı tel tel değil, tek biçim olarak çiz.'},
+  {t:'7 – 10 sn',ad:'Yanık siena alt boyama',tools:['yassi'],cols:['siena'],reg:['sac','sakal'],ref:1,ne:'Sulu, ince yanık sienayla koyu olacak yerleri işaretle: saç, sakalın altı, yüzün gölge tarafı. Yoğunluğu düşür; tuval dokusu fırça izinin içinden görünsün.'},
+  {t:'10 – 11 sn',ad:'Sakal ve gölge kütleleri',tools:['yassi','kucuk'],cols:['umbra','okra'],reg:['sakal','yuz'],ref:2,ne:'Ham umbrayla en koyu yerleri, okrayla sakalın sıcak orta tonunu koy. Fırça izleri sakalın akış yönünde, ağızdan dışa doğru.'},
+  {t:'12 – 14 sn',ad:'Arka plan: ilk kat',tools:['yassi'],cols:['zemin'],reg:['arka'],ref:3,ne:'Zeytin-umbrayı kulağın ve yanağın kenarına kadar getir. Kulağı arka planla keserek biçimlendir; kulağın kendisi şimdilik beyaz kalsın.'},
+  {t:'14,5 – 17 sn',ad:'Ten',tools:['yassi'],cols:['ten','tenG'],reg:['yuz','kulak'],ref:4,ne:'Pembe teni yanaktan başlayarak düz, kalın lekelerle koy. Fırçayı yatır, kısa çek, kaldır. Gölge tarafına ten gölgesi.'},
+  {t:'17 – 18 sn',ad:'Ten ışıkları ve geçişler',tools:['kucuk','harman'],cols:['tenA','ten'],reg:['yuz'],ref:5,ne:'Alına, burun sırtına ve elmacık kemiğine açık ten. Lekelerin arasını harmanlayıcıyla yalnızca gereken yerde yumuşat; her yeri eritme.'},
+  {t:'18,5 – 19,5 sn',ad:'Arka plan: siyah',tools:['yassi'],cols:['siyah'],reg:['arka'],ref:6,ne:'Zeytin katın üstüne siyahı geniş çekişlerle sür. Yüzün ve kulağın kenarı bu koyulukla keskinleşir, ten parlar.'},
+  {t:'20 – 21 sn',ad:'Gözler ve kaşlar',tools:['kucuk','ince'],cols:['umbra','tenG'],reg:['gozler'],ref:7,ne:'Göz çukurlarını ham umbrayla koyu lekeler olarak yerleştir, kaşları üstüne çek. Burnun gölge yüzünü ve burun altını koy.'},
+  {t:'22 sn',ad:'Yaka ve ceket',tools:['yassi','spatula'],cols:['beyaz','laci'],reg:['yaka','ceket'],ref:8,ne:'Yakayı kalın beyazla, birkaç geniş çekişte koy. Ceketi lacivertle kapat. Sakalın alt kenarı yakanın üstüne düşsün.'},
+  {t:'22,5 sn',ad:'Sıcak vurgular',tools:['kucuk'],cols:['kizil'],reg:['kulak','yuz'],ref:9,ne:'Kulağa, burun kanadına, yanağa ve alt dudağa sıcak kızıl dokunuşlar. Ten bu kızıllarla canlanır.'},
+  {t:'23 – 24 sn',ad:'Göz ayrıntısı',tools:['ince'],cols:['goz','umbra','beyaz'],reg:['gozler'],ref:10,ne:'En ince fırça. İrisi gri-maviyle koy, göz bebeğini koyu, üst kapak çizgisini tek çekişte. En son tek beyaz ışık noktası.'},
+  {t:'24,5 – 25 sn',ad:'Sakal ve bıyık',tools:['ince','kucuk'],cols:['gri','krem','umbra'],reg:['sakal','biyik'],ref:11,ne:'Koyu sakal kütlesinin üstüne gri ve kremle kısa, kıvrık çizgiler. Her çizgi bir tutam; ağızdan dışa ve aşağı doğru aksın. Koyu araları kapatma.'}]},
+];
+let EX,COLORS,SHAPES,LINES,SKETCH,STEPS;
+
+/* ---------- durum ---------- */
+const S={ex:null,screen:0,kit:new Set(TOOLS.map(t=>t.id)),tool:'kalin',color:'koyu',size:{},op:{},
+ sizeId:'d34',ground:'ekru',texture:true,guide:true,step:0,done:new Set(),dirty:false,built:null};
+TOOLS.forEach(t=>{S.size[t.id]=t.size;S.op[t.id]=t.op});
+const tool=id=>TOOLS.find(t=>t.id===id), col=id=>COLORS.find(c=>c.id===id);
+
+/* ---------- renk yardımcıları ---------- */
+function hsl(hex){let r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
+ const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);
+ h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s*100,l*100]}
+function jit(hex,dl,dh){const[h,s,l]=hsl(hex);return`hsl(${h+rnd(-dh,dh)} ${s}% ${clamp(l+rnd(-dl,dl),0,100)}%)`}
+
+/* ---------- fırça motoru ---------- */
+const tmp=document.createElement('canvas');
+const MEDT={kuru:{d:4.5,lw:1.5,a:[.35,.8],drop:.08,j:8},pastel:{d:2.4,lw:4.6,a:[.75,1],drop:.2,j:6},soft:{d:2.4,lw:4.8,a:[.22,.5],drop:.28,j:6}};
+function Stroke(ctx,id,hex,size,op,total=0){
+ let last=null,acc=0,w=size*.6,n0=null,br=null,trav=0,f0=total?.45:1;
+ if(id==='yassi'||id==='spatula'){const n=Math.max(4,Math.round(size/(id==='yassi'?2.2:6)));
+  br=Array.from({length:n},(_,i)=>({o:(i/(n-1)-.5)*size,c:jit(hex,7,2),a:id==='yassi'?rnd(.7,1):rnd(.2,.6)}));}
+ const mt=MEDT[id];if(mt){const n=Math.max(2,Math.round(size/mt.d));br=Array.from({length:n},(_,i)=>({o:(i/(n-1)-.5)*size,c:jit(hex,mt.j,3),a:rnd(mt.a[0],mt.a[1])}))}
+ ctx.lineCap='round';ctx.lineJoin='round';
+ const L=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+ function stamp(p){
+  if(id==='sulu'){const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,size/2);g.addColorStop(0,hex);g.addColorStop(.65,hex);g.addColorStop(1,'rgba(255,255,255,0)');ctx.globalAlpha=op*.14;ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,size/2,0,6.283);ctx.fill();return}
+  if(id==='kalin'){const n=20+size/3|0;for(let i=0;i<n;i++){const an=rnd(0,6.283),r=size/2*Math.sqrt(Math.random()),x=p.x+Math.cos(an)*r,y=p.y+Math.sin(an)*r,
+    a2=rnd(0,6.283),l=size*rnd(.1,.3);ctx.globalAlpha=op*rnd(.45,.95);ctx.strokeStyle=jit(hex,9,5);ctx.lineWidth=size*rnd(.06,.15)+1;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a2)*l,y+Math.sin(a2)*l);ctx.stroke();}}
+  else{for(let i=0;i<5;i++){const an=rnd(0,6.283),r=size/2*Math.sqrt(Math.random());ctx.globalAlpha=op*rnd(.6,1);ctx.fillStyle=jit(hex,6,3);
+    ctx.beginPath();ctx.ellipse(p.x+Math.cos(an)*r,p.y+Math.sin(an)*r,size*rnd(.12,.3),size*rnd(.08,.2),rnd(0,3.14),0,6.283);ctx.fill();}}
+ }
+ function smudge(a,b){const r=Math.max(4,size/2|0),d=r*2;tmp.width=tmp.height=d;const t=tmp.getContext('2d');
+  t.drawImage(ctx.canvas,a.x-r,a.y-r,d,d,0,0,d,d);t.globalCompositeOperation='destination-in';
+  const g=t.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'#000');g.addColorStop(.55,'rgba(0,0,0,.8)');g.addColorStop(1,'rgba(0,0,0,0)');
+  t.fillStyle=g;t.fillRect(0,0,d,d);ctx.globalAlpha=op*.7;ctx.drawImage(tmp,b.x-r,b.y-r);}
+ function seg(a,b,pr,pen){
+  const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+  if(id==='kalin'||id==='kucuk'||id==='sulu'){const sp=size*(id==='kalin'?.3:id==='sulu'?.16:.4);acc+=d;if(acc<sp)return;const n=acc/sp|0;for(let i=1;i<=n;i++)stamp(L(a,b,i/n));acc-=n*sp;return;}
+  if(id==='harman'){const sp=Math.max(2,size*.12),n=Math.max(1,d/sp|0);let p=a;for(let i=1;i<=n;i++){const q=L(a,b,i/n);smudge(p,q);p=q}return;}
+  if(id==='ince'){const tg=pen?size*(.2+pr*1.1):size*clamp(1.15-d/(size*2.5+16),.2,1);w+=(tg-w)*.3;
+   ctx.globalAlpha=op;ctx.strokeStyle=hex;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();return;}
+  if(id==='fuzen'){ctx.strokeStyle='#3a3330';for(let i=0;i<3;i++){const ox=rnd(-size,size)*.3,oy=rnd(-size,size)*.3;ctx.globalAlpha=op*rnd(.2,.55);ctx.lineWidth=size*rnd(.25,.7);
+   ctx.beginPath();ctx.moveTo(a.x+ox,a.y+oy);ctx.lineTo(b.x+ox,b.y+oy);ctx.stroke()}return;}
+  if(id==='kalem'){ctx.globalAlpha=op*.6;ctx.strokeStyle='#4a4744';ctx.lineWidth=size;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();return;}
+  if(id==='silgi'){ctx.globalCompositeOperation='destination-out';ctx.globalAlpha=op;ctx.lineWidth=size;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.globalCompositeOperation='source-over';return;}
+  // yassı ve spatula: harekete dik kıl sırası
+  let n1={x:-dy/d,y:dx/d};if(n0){n1={x:n0.x*.6+n1.x*.4,y:n0.y*.6+n1.y*.4};const m=Math.hypot(n1.x,n1.y)||1;n1.x/=m;n1.y/=m}else n0=n1;
+  if(id==='spatula'){const h=size/2;ctx.globalAlpha=op;ctx.fillStyle=hex;ctx.beginPath();ctx.moveTo(a.x+n0.x*h,a.y+n0.y*h);ctx.lineTo(b.x+n1.x*h,b.y+n1.y*h);
+   ctx.lineTo(b.x-n1.x*h,b.y-n1.y*h);ctx.lineTo(a.x-n0.x*h,a.y-n0.y*h);ctx.fill();}
+  trav+=d;const f1=total?clamp(Math.min(trav/(size*.5)+.45,(total-trav)/(size*.7)+.45),.45,1):1,dry=total?.7+.3*f1:1;
+  for(const k of br){if(mt&&Math.random()<mt.drop)continue;ctx.globalAlpha=op*k.a*dry;ctx.strokeStyle=k.c;ctx.lineWidth=mt?mt.lw:id==='yassi'?4.2:1.6;ctx.beginPath();
+   ctx.moveTo(a.x+n0.x*k.o*f0,a.y+n0.y*k.o*f0);ctx.lineTo(b.x+n1.x*k.o*f1,b.y+n1.y*k.o*f1);ctx.stroke();}
+  n0=n1;f0=f1;
+ }
+ return{move(x,y,pr=.5,pen=false){const p={x,y};if(!last){last=p;if(id==='kalin'||id==='kucuk'||id==='sulu')stamp(p);return}
+   if(Math.hypot(x-last.x,y-last.y)<.7)return;seg(last,p,pr,pen);last=p},
+  end(){ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}};
+}
+
+/* ---------- ekran 0: örnekler ---------- */
+function setExample(id){
+ if(S.ex===id)return true;
+ if(S.dirty&&!confirm('Örnek değişince tuvaldeki resim silinir. Devam edilsin mi?'))return false;
+ demoStop();EX=EXAMPLES.find(e=>e.id===id);S.ex=id;COLORS=EX.colors.map(c=>({...c,on:true}));
+ const oi=SIZES.findIndex(z=>z.id==='ozel');if(oi>=0)SIZES.splice(oi,1);
+ if(EX.custom)SIZES.unshift({id:'ozel',ad:'Resmin oranı',w:EX.W,h:EX.H,not:''});
+ D.i=0;D.cur=null;D.mask=null;D.lshow=null;$('#demoBox').hidden=!EX.custom;
+ SHAPES=EX.shapes;LINES=EX.lines;SKETCH=EX.sketch;STEPS=EX.steps;
+ S.step=0;S.done=new Set();S.sizeId=EX.size;S.ground=EX.ground;S.color=STEPS[0].cols[0];S.guide=true;$('#optGuide').checked=true;
+ if(S.built){pctx.clearRect(0,0,pcv.width,pcv.height);undo=[];redo=[]}S.dirty=false;return true;}
+function renderExamples(busy){const el=$('#exCards');el.innerHTML='';
+ EXAMPLES.forEach(e=>{const d=document.createElement('div');d.className='card ex '+(S.ex===e.id?'on':'');
+  d.innerHTML=`<img alt=""><div class="tick" style="${S.ex===e.id?'':'display:none'}">✓</div><h3></h3><div class="meta">${e.alt}</div>
+   <ul>${e.teknik.map(([k,v])=>`<li><b>${k}:</b> ${v}</li>`).join('')}</ul><button class="primary">${S.ex===e.id?'Bu örnekle devam et →':'Bu örneği seç →'}</button>${e.custom?'<button class="del">Kütüphaneden sil</button>':''}`;
+  if(REF||e.custom)d.querySelector('img').src=e.thumb||`ref/${e.id}/thumb.jpg`;
+  else d.querySelector('img').outerHTML=`<svg class="exsk" viewBox="${e.vb}" preserveAspectRatio="xMidYMid meet">${e.sketch.map(k=>`<path d="${e.shapes[k]}"/>`).join('')}</svg>`;d.querySelector('h3').textContent=e.ad;
+  d.onclick=()=>{if(setExample(e.id))go(e.custom?4:1)};
+  if(e.custom)d.querySelector('.del').onclick=ev=>{ev.stopPropagation();removeUser(e.id)};el.append(d)});
+ const a=document.createElement('div');a.className='card ex add';
+ a.innerHTML=busy?`<h3>Analiz ediliyor…</h3><p>Renkler, tonlar ve kenarlar çıkarılıyor.</p>`:`<div class="plus">＋</div><h3>Kendi resmini ekle</h3><p>Bir fotoğraf ya da resim seç. Uygulama onu analiz eder, boyalarını çıkarır ve aynı kalıpla adım adım boyar.</p>`;
+ if(!busy)a.onclick=()=>$('#file').click();el.append(a);}
+
+/* ---------- kendi resmin: kütüphane, analiz, kalıp ---------- */
+const KALIP=[
+ {ad:'Eskiz',tools:['kalem','fuzen'],ne:'Resmin ana hatları kurşun kalemle çıkarılır: biçimlerin kenarları, ufuk, büyük sınırlar. Ayrıntı yok.'},
+ {ad:'Altlık boya',tools:['yassi'],ne:'En geniş fırçayla tuval yukarıdan aşağı, yatay çekişlerle kapatılır. Her alan kendi ortalama rengini alır; biçim aranmaz, zemin kapanır.'},
+ {ad:'Büyük şekiller',tools:['yassi','kalin'],ne:'Altlığın üstüne resmin büyük şekilleri tek tek gelir: en büyüğünden başlanır. Her şekil kendi sınırı içinde, önce koyu sonra açık boyasıyla, uzun çekişlerle boyanır. Tuvalde sarı işaretli yer sıradaki şekildir.'},
+ {ad:'Küçük şekiller',tools:['yassi','kucuk'],ne:'Büyüklerin ardından daha küçük ve özel şekiller, yine büyükten küçüğe, tek tek yerleştirilir. Fırça daralır.'},
+ {ad:'Biçimleri toplama',tools:['yassi','kucuk'],ne:'Dar yassı fırçayla tüm tuval bir kez daha dolaşılır. Her çekiş o noktanın kendi rengini taşır; kenarlar toparlanır, resim örneğe yaklaşır.'},
+ {ad:'İnce ayrıntılar',tools:['ince','kucuk'],ne:'İnce fırçayla, yalnızca ayrıntının yoğun olduğu yerlerde kısa ve ince çekişler. Düz alanlara dokunulmaz.'},
+ {ad:'Çizgiler',tools:['ince'],ne:'En ince fırçayla keskin kenarlar, dallar, hatlar ve çizgisel ayrıntılar uzun tek çekişlerle çizilir.'},
+ {ad:'Son ışıklar',tools:['yassi','kucuk'],ne:'En parlak noktalara az sayıda, kalın ve temiz vuruş. Resim bu vuruşlarla biter.'},
+];
+const DB={
+ open(){return new Promise((res,rej)=>{const r=indexedDB.open('resim-atolyesi',1);r.onupgradeneeded=()=>r.result.createObjectStore('resimler',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+ async run(mode,fn){try{const db=await this.open();return await new Promise((res,rej)=>{const q=fn(db.transaction('resimler',mode).objectStore('resimler'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){console.warn('Kütüphane kaydı kullanılamıyor',e);return null}},
+ all(){return this.run('readonly',s=>s.getAll())},put(r){return this.run('readwrite',s=>s.put(r))},del(id){return this.run('readwrite',s=>s.delete(id))}};
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+const hex2=v=>Math.round(v).toString(16).padStart(2,'0');
+function renkAdi(hex){const[h,s,l]=hsl(hex);
+ if(s<12)return l<15?'Siyah':l<35?'Koyu gri':l<65?'Gri':l<88?'Açık gri':'Beyaz';
+ const b=h<15||h>=340?'kırmızı':h<40?(l<45?'kahve':'turuncu'):h<65?(l<40?'haki':'sarı'):h<160?'yeşil':h<200?'turkuaz':h<255?'mavi':h<290?'mor':'pembe';
+ const on=l<28?'Koyu ':l>72?'Açık ':s<30?'Soluk ':'';return on?on+b:b[0].toUpperCase()+b.slice(1)}
+/* ---------- resim akımları: aynı kalıp, farklı renk, ışık ve fırça ---------- */
+const MOVEMENTS=[
+ {id:'ozgun',ad:'Özgün',yil:'',oz:'Resmin kendi renkleri ve ışığı.',tem:'',uyg:'Renklere dokunulmaz; kalıp olduğu gibi uygulanır.',P:{}},
+ {id:'ronesans',ad:'Rönesans',yil:'14. – 17. yy başı',oz:'İnsan merkezli; perspektif, anatomi ve ışık-gölge teknikleri.',tem:'Leonardo da Vinci, Michelangelo, Raphael',uyg:'Sıcak toprak tonları, yumuşak geçişli gölge (sfumato), ince ve sakin fırça.',P:{sat:.75,con:.95,sh:[70,45,25,.45],hi:[250,232,190,.3],vig:.25,w:.85,T:.85}},
+ {id:'barok',ad:'Barok',yil:'1600 – 1750',oz:'Dramatik kompozisyon, güçlü ışık-gölge karşıtlığı.',tem:'Caravaggio, Rembrandt',uyg:'Gölgeler koyu kahve-siyaha gömülür, ışık sıcak parlar, kenarlar kararır.',P:{sat:.95,con:1.45,crush:100,crushCol:[18,11,6],hi:[255,225,170,.3],vig:.6,w:.9}},
+ {id:'neoklasik',ad:'Neoklasisizm',yil:'1750 – 1830',oz:'Antik Yunan ve Roma sanatına dönüş; simetri, sadelik, kusursuz form.',tem:'Jacques-Louis David, Ingres',uyg:'Serin ve berrak ışık, yatışmış renk, fırça izi neredeyse görünmeyen pürüzsüz yüzey.',P:{sat:.82,con:1.08,sh:[50,55,70,.25],hi:[240,244,250,.25],w:.75,T:.8}},
+ {id:'romantizm',ad:'Romantizm',yil:'1800 – 1850',oz:'Duygu, coşku, doğanın vahşi gücü ve hayal gücü.',tem:'Eugène Delacroix',uyg:'Altın sarısı ışık, derin mor-kahve gölge, yüksek karşıtlık, uzun ve hareketli fırça.',P:{sat:1.15,con:1.3,sh:[35,28,45,.5],hi:[255,214,140,.4],vig:.45,len:1.2}},
+ {id:'realizm',ad:'Realizm',yil:'1840 – 1880',oz:'Günlük yaşam ve gerçekler, süssüz ve çıplak.',tem:'Gustave Courbet',uyg:'Toprak renkleri, kısılmış doygunluk, abartısız ışık, ayrıntılı fırça.',P:{sat:.78,con:1.05,sh:[55,42,30,.4],hi:[225,215,195,.2],w:.9,T:.9}},
+ {id:'izlenimcilik',ad:'İzlenimcilik',yil:'1860 – 1890',oz:'Açık havada anlık ışık; görünür fırça darbeleri, doğanın izlenimi.',tem:'Claude Monet, Renoir, Degas',uyg:'Parlak ve aydınlık renk, siyah yerine mor-mavi gölge, kısa ve kalın dokunuşlar; çizgi ve ince ayrıntı yok.',P:{sat:1.35,con:.92,bri:14,sh:[90,80,170,.55],hi:[255,245,210,.3],w:1.15,len:.4,T:1.2,maxLayer:4,lines:false}},
+ {id:'fovizm',ad:'Fovizm',yil:'1905 – 1910',oz:'Vahşi, canlı, doğaya bağlı olmayan cesur renkler.',tem:'Henri Matisse, André Derain',uyg:'Gölge mavi-yeşile, ışık turuncu-sarıya döner; en yüksek doygunluk, geniş düz lekeler, mavi dış hat.',P:{sat:1.9,con:1.2,bands:[[40,30,140],[20,130,90],[225,50,40],[250,150,30],[255,225,90]],bandMix:.5,w:1.5,len:.9,T:1.6,maxLayer:3,lines:false,outline:2.2,outCol:'#1c2a7a',flat:1}},
+ {id:'ekspresyonizm',ad:'Dışavurumculuk',yil:'1905 – 1920',oz:'Sanatçının iç dünyası; abartılı renk ve biçim.',tem:'Edvard Munch, Ernst Ludwig Kirchner',uyg:'Sert karşıtlık, mavi-yeşil gölge ve turuncu ışık, dalgalanan uzun fırça, kalın koyu dış hat.',P:{sat:1.6,con:1.4,sh:[15,45,70,.6],hi:[255,170,40,.45],hue:-12,ang:'swirl',w:1.25,len:1.6,T:1.3,maxLayer:4,lines:false,outline:2.6,outCol:'#0d0d12'}},
+ {id:'kubizm',ad:'Kübizm',yil:'1908 – 1920',oz:'Nesneler geometrik parçalara ayrılır, birden fazla açıdan gösterilir.',tem:'Pablo Picasso, Georges Braque',uyg:'Resim üçgen yüzeylere bölünür; okra, gri ve kahve; fırça yalnızca yatay, dikey ve çapraz gider.',P:{sat:.45,con:1.15,sh:[60,50,40,.4],hi:[220,200,160,.35],facet:13,ang:'quant',w:1.2,len:1.3,T:1.4,maxLayer:3,lines:false,outline:1.4,outCol:'#2a241c',flat:1}},
+ {id:'futurizm',ad:'Fütürizm',yil:'1909 – 1918',oz:'Hız, teknoloji, makine, dinamizm.',tem:'Giacomo Balla, Umberto Boccioni',uyg:'Bütün fırça izleri aynı çapraz yönde ve çok uzun; hız çizgisi etkisi, mor gölge ve turuncu ışık.',P:{sat:1.35,con:1.25,sh:[40,30,110,.45],hi:[255,160,60,.35],ang:'diag',w:.9,len:2.6,T:1.1,maxLayer:4,lines:false}},
+ {id:'surrealizm',ad:'Sürrealizm',yil:'1917 – 1950',oz:'Bilinçaltı, rüyalar, mantık dışı kurgular.',tem:'Salvador Dalí, René Magritte',uyg:'Renkler kayar, gölgeler turkuaza döner; rüya gibi pürüzsüz ve çok ayrıntılı yüzey.',P:{sat:1.2,con:1.15,hue:18,sh:[10,60,80,.5],hi:[255,220,170,.35],vig:.3,w:.7,T:.75}},
+ {id:'soyut',ad:'Soyut Sanat',yil:'1910 – günümüz',oz:'Somut figür yok; saf renk, çizgi ve geometri.',tem:'Wassily Kandinsky, Piet Mondrian',uyg:'Resim büyük geometrik alanlara iner; ana renkler, siyah ve beyaz; yalnızca altlık ve büyük şekiller boyanır.',P:{sat:1.4,con:1.3,facet:7,bands:[[20,20,24],[30,60,170],[210,40,35],[245,200,40],[245,242,235]],bandMix:.75,ang:'quant',w:2,len:1.5,T:2.2,maxLayer:2,lines:false,flat:1}},
+ {id:'popart',ad:'Pop Art',yil:'1950 – 1960',oz:'Tüketim toplumu, reklam, çizgi roman, popüler kültür.',tem:'Andy Warhol, Roy Lichtenstein',uyg:'Dört kademeli düz renk; pembe, mavi, sarı; yatay düz fırça ve kalın siyah dış hat.',P:{sat:2,con:1.5,post:4,bands:[[20,16,30],[230,30,120],[30,170,230],[255,225,40],[255,250,240]],bandMix:.45,ang:'horiz',w:1.4,len:1.2,T:1.8,maxLayer:3,lines:false,outline:3,outCol:'#0a0a0a',flat:1}},
+];
+const MEDIA=[
+ {id:'yagli',ad:'Yağlı boya',oz:'Kalın, örtücü boya; görünür fırça izi. Koyudan açığa, katman katman.',Q:{}},
+ {id:'sulu',ad:'Sulu boya',oz:'Saydam, sulu lekeler; kenarlar yumuşak, renkler açık ve havadar. Beyaz kâğıt ışık olarak kalır.',Q:{tool:{yassi:'sulu',ince:'sulu'},op:.9,w:1.5,len:1.2,T:1.25,maxLayer:4,ground:'beyaz',px:{sat:.95,con:.9,bri:22}}},
+ {id:'kuruboya',ad:'Kuru boya',oz:'Renkli kalem; aynı yönde ince taramalar üst üste binerek rengi kurar. Beyaz kâğıt aralardan görünür.',Q:{tool:{yassi:'kuru',ince:'kuru'},op:.9,w:1.1,len:1.4,T:.9,ground:'beyaz',ang:'diag',px:{sat:1.05,bri:8}}},
+ {id:'karakalem',ad:'Kuru kalem',oz:'Kurşun kalem; renk yok, yalnızca açık-koyu. Taramanın sıklığı tonu verir.',Q:{tool:{yassi:'kuru',ince:'kuru'},op:.9,w:1.1,len:1.4,T:.9,ground:'beyaz',ang:'diag',px:{sat:0,con:1.15,bri:6}}},
+ {id:'yaglipastel',ad:'Yağlı pastel',oz:'Mumlu, parlak, kalın çizgi; canlı renk. Kâğıt dokusu aralardan görünür, ince ayrıntı yoktur.',Q:{tool:{yassi:'pastel',ince:'pastel'},w:1.25,len:1.2,T:1.2,maxLayer:4,lines:false,px:{sat:1.25,con:1.05}}},
+ {id:'softpastel',ad:'Soft pastel',oz:'Tebeşirimsi, tozlu, yumuşak iz; yatışmış renk. Gri kâğıt zemin tonu resme katılır.',Q:{tool:{yassi:'soft',ince:'soft'},op:.9,w:1.35,len:1.1,T:1.15,maxLayer:4,lines:false,ground:'gri',px:{sat:.9,con:.95,bri:10}}},
+];
+const AK_DEF={con:1,bri:0,sat:1,w:1,len:1,T:1,maxLayer:5,lines:true};
+// piksel dönüşümü: akımın rengi, ışığı ve gölgesi burada verilir
+function stylePixels(d,aw,ah,P){const n=aw*ah;
+ if(P.facet){const b=Math.max(4,Math.round(aw/P.facet));
+  for(let by=0;by<ah;by+=b)for(let bx=0;bx<aw;bx+=b){const flip=((bx/b|0)+(by/b|0))%2,acc=[[0,0,0,0],[0,0,0,0]],xe=Math.min(aw,bx+b),ye=Math.min(ah,by+b);
+   const side=(x,y)=>{const u=(x-bx)/b,v=(y-by)/b;return(flip?u+v<1:u>v)?0:1};
+   for(let y=by;y<ye;y++)for(let x=bx;x<xe;x++){const a=acc[side(x,y)],i=(y*aw+x)*4;a[0]+=d[i];a[1]+=d[i+1];a[2]+=d[i+2];a[3]++}
+   for(let y=by;y<ye;y++)for(let x=bx;x<xe;x++){const a=acc[side(x,y)],i=(y*aw+x)*4;d[i]=a[0]/a[3];d[i+1]=a[1]/a[3];d[i+2]=a[2]/a[3]}}}
+ const hr=(P.hue||0)*Math.PI/180,ch=Math.cos(hr),sn=Math.sin(hr);
+ for(let i=0;i<n;i++){let r=(d[i*4]-128)*P.con+128+P.bri,g=(d[i*4+1]-128)*P.con+128+P.bri,b=(d[i*4+2]-128)*P.con+128+P.bri;
+  const L=.299*r+.587*g+.114*b,t=clamp(L/255,0,1);r=L+(r-L)*P.sat;g=L+(g-L)*P.sat;b=L+(b-L)*P.sat;
+  if(hr){const I=.596*r-.274*g-.322*b,Q=.211*r-.523*g+.312*b,I2=I*ch-Q*sn,Q2=I*sn+Q*ch;r=L+.956*I2+.621*Q2;g=L-.272*I2-.647*Q2;b=L-1.106*I2+1.703*Q2}
+  if(P.sh){const w=(1-t)*(1-t)*P.sh[3];r+=(P.sh[0]-r)*w;g+=(P.sh[1]-g)*w;b+=(P.sh[2]-b)*w}
+  if(P.hi){const w=t*t*P.hi[3];r+=(P.hi[0]-r)*w;g+=(P.hi[1]-g)*w;b+=(P.hi[2]-b)*w}
+  if(P.bands){const f=t*(P.bands.length-1),k=Math.min(P.bands.length-2,f|0),u=f-k,A=P.bands[k],Z=P.bands[k+1],m=P.bandMix;r+=(A[0]+(Z[0]-A[0])*u-r)*m;g+=(A[1]+(Z[1]-A[1])*u-g)*m;b+=(A[2]+(Z[2]-A[2])*u-b)*m}
+  if(P.crush){const k=clamp((P.crush-L)/P.crush,0,1)*.9;r+=(P.crushCol[0]-r)*k;g+=(P.crushCol[1]-g)*k;b+=(P.crushCol[2]-b)*k}
+  if(P.vig){const dx=(i%aw)/aw-.5,dy=(i/aw|0)/ah-.5,v=1-P.vig*(dx*dx+dy*dy)*2.2;r*=v;g*=v;b*=v}
+  if(P.post){const q=255/(P.post-1);r=Math.round(r/q)*q;g=Math.round(g/q)*q;b=Math.round(b/q)*q}
+  d[i*4]=r;d[i*4+1]=g;d[i*4+2]=b}}
+const AK_PREV=new Map();
+async function akimPreviews(ex){if(AK_PREV.has(ex.src))return AK_PREV.get(ex.src);const img=await loadImg(ex.src),w=384,h=Math.round(384*img.height/img.width),c=document.createElement('canvas');c.width=w;c.height=h;
+ const x=c.getContext('2d');x.drawImage(img,0,0,w,h);const base=x.getImageData(0,0,w,h),out={};
+ for(const m of MOVEMENTS){const im=new ImageData(new Uint8ClampedArray(base.data),w,h);stylePixels(im.data,w,h,{...AK_DEF,...m.P});x.putImageData(im,0,0);out[m.id]=c.toDataURL('image/jpeg',.82)}
+ AK_PREV.set(ex.src,out);return out}
+let akimBusy=false;
+async function renderAkim(){const box=$('#akimBox');box.hidden=!EX.custom;if(!EX.custom)return;const cur=EX.style||'ozgun',curM=EX.medium||'yagli',m0=MOVEMENTS.find(m=>m.id===cur),d0=MEDIA.find(m=>m.id===curM),ex=EX;
+ const info=m=>`<b>${m.ad}${m.yil?' · '+m.yil:''}</b>${m.oz}${m.tem?`<small>Temsilciler: ${m.tem}</small>`:''}${m.uyg?`<small>Uygulamada: ${m.uyg}</small>`:''}`;
+ const base=()=>`<b>${d0.ad}${cur==='ozgun'?'':' · '+m0.ad}</b>${d0.oz}${cur==='ozgun'?'':`<small>${m0.ad}: ${m0.uyg}</small>`}`;
+ $('#akimInfo').innerHTML=base();
+ const med=$('#medyaStrip');med.innerHTML='';
+ MEDIA.forEach(m=>{const b=document.createElement('button');b.className='medya'+(m.id===curM?' on':'');b.textContent=m.ad;b.title=m.oz;
+  b.onmouseenter=()=>{if(!akimBusy)$('#akimInfo').innerHTML=info(m)};b.onmouseleave=()=>{if(!akimBusy)$('#akimInfo').innerHTML=base()};b.onclick=()=>applyStyle(cur,m.id);med.append(b)});
+ const strip=$('#akimStrip');strip.innerHTML='';
+ MOVEMENTS.forEach(m=>{const b=document.createElement('button');b.className='akim'+(m.id===cur?' on':'');b.innerHTML=`<img alt="" data-ak="${m.id}"><span>${m.ad}</span>`;b.title=m.oz;
+  b.onmouseenter=()=>{if(!akimBusy)$('#akimInfo').innerHTML=info(m)};b.onmouseleave=()=>{if(!akimBusy)$('#akimInfo').innerHTML=base()};b.onclick=()=>applyStyle(m.id,curM);strip.append(b)});
+ const pv=await akimPreviews(ex);if(EX===ex)strip.querySelectorAll('img').forEach(im=>im.src=pv[im.dataset.ak]);}
+async function applyStyle(id,med){if(akimBusy||!EX.custom)return;id=id||EX.style||'ozgun';med=med||EX.medium||'yagli';if(id===(EX.style||'ozgun')&&med===(EX.medium||'yagli'))return;akimBusy=true;demoStop();
+ const rec={id:EX.id,ad:EX.baseAd,src:EX.src,style:id,medium:med};$('#akimInfo').innerHTML=`<b>${MEDIA.find(v=>v.id===med).ad} · ${MOVEMENTS.find(v=>v.id===id).ad}</b>Resim yeniden analiz ediliyor…`;
+ await new Promise(r=>setTimeout(r,40));
+ try{const ex=await analyze(rec);EXAMPLES[EXAMPLES.findIndex(e=>e.id===rec.id)]=ex;await DB.put(rec);S.ex=null;S.dirty=false;setExample(ex.id);go(4)}catch(e){console.error(e);alert('Seçim uygulanamadı.')}
+ akimBusy=false;renderAkim()}
+
+async function analyze(rec){
+ const img=await loadImg(rec.src),k=1200/Math.max(img.width,img.height),W=Math.round(img.width*k),H=Math.round(img.height*k);
+ const a=400/Math.max(W,H),aw=Math.round(W*a),ah=Math.round(H*a),n=aw*ah,sc=W/aw;
+ const cv=document.createElement('canvas');cv.width=aw;cv.height=ah;const cx=cv.getContext('2d');cx.drawImage(img,0,0,aw,ah);
+ const d=cx.getImageData(0,0,aw,ah).data,lum=new Float32Array(n),M=MOVEMENTS.find(m=>m.id===rec.style)||MOVEMENTS[0],P={...AK_DEF,...M.P};
+ if(M.id!=='ozgun')stylePixels(d,aw,ah,P);
+ const Md=MEDIA.find(m=>m.id===rec.medium)||MEDIA[0],Q=Md.Q;if(Q.px)stylePixels(d,aw,ah,{...AK_DEF,...Q.px});
+ P.w*=Q.w||1;P.len*=Q.len||1;P.T*=Q.T||1;P.maxLayer=Math.min(P.maxLayer,Q.maxLayer||5);if(Q.lines===false)P.lines=false;if(Q.ang&&!P.ang)P.ang=Q.ang;
+ for(let i=0;i<n;i++)lum[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];
+ // 1) boyalar: k-ortalama ile 12 renk
+ const K=12,ord=Array.from({length:n},(_,i)=>i).sort((p,q)=>lum[p]-lum[q]);let cen=[];
+ for(let j=0;j<K;j++){const i=ord[Math.floor((j+.5)/K*n)];cen.push([d[i*4],d[i*4+1],d[i*4+2]])}
+ const lab=new Uint8Array(n);
+ for(let it=0;it<8;it++){const sum=cen.map(()=>[0,0,0,0]);
+  for(let i=0;i<n;i++){const r=d[i*4],g=d[i*4+1],b=d[i*4+2];let best=0,bd=1e9;
+   for(let j=0;j<K;j++){const c=cen[j],dd=(r-c[0])**2+(g-c[1])**2+(b-c[2])**2;if(dd<bd){bd=dd;best=j}}
+   lab[i]=best;const s=sum[best];s[0]+=r;s[1]+=g;s[2]+=b;s[3]++}
+  sum.forEach((s,j)=>{if(s[3])cen[j]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]})}
+ const L=c=>.299*c[0]+.587*c[1]+.114*c[2],perm=cen.map((_,j)=>j).sort((p,q)=>L(cen[p])-L(cen[q])),inv=[];perm.forEach((p,j)=>inv[p]=j);
+ cen=perm.map(p=>cen[p]);const st=cen.map(()=>[0,0,0]);
+ for(let i=0;i<n;i++){const j=lab[i]=inv[lab[i]];st[j][0]++;st[j][1]+=i%aw;st[j][2]+=i/aw|0}
+ const seen={},colors=cen.map((c,j)=>{const hex='#'+hex2(c[0])+hex2(c[1])+hex2(c[2]);let ad=renkAdi(hex);seen[ad]=(seen[ad]||0)+1;if(seen[ad]>1)ad+=' '+seen[ad];
+  const[m,sx,sy]=st[j],mx=sx/(m||1)/aw,my=sy/(m||1)/ah,dk=my<.38?'üst':my>.62?'alt':'orta',yt=mx<.38?'sol':mx>.62?'sağ':'orta';
+  return{id:'c'+j,ad,hex,yer:`Resmin yaklaşık %${Math.max(1,Math.round(m/n*100))} kadarı; ağırlıkla ${dk===yt?'orta':dk+', '+yt} bölümde.`}});
+ // 2) tonlar ve kenarlar
+ const B=new Float32Array(n);for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){let s=0,c=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<aw&&yy<ah){s+=lum[yy*aw+xx];c++}}B[y*aw+x]=s/c}
+ const mag=new Float32Array(n),tan=new Float32Array(n),GX=new Float32Array(n),GY=new Float32Array(n);
+ for(let y=1;y<ah-1;y++)for(let x=1;x<aw-1;x++){const i=y*aw+x,gx=B[i-aw+1]+2*B[i+1]+B[i+aw+1]-B[i-aw-1]-2*B[i-1]-B[i+aw-1],gy=B[i+aw-1]+2*B[i+aw]+B[i+aw+1]-B[i-aw-1]-2*B[i-aw]-B[i-aw+1];
+  mag[i]=Math.hypot(gx,gy);tan[i]=Math.atan2(gy,gx)+Math.PI/2;GX[i]=gx;GY[i]=gy}
+ const pct=(arr,p)=>{const s=Float32Array.from(arr).sort();return s[Math.floor(p*(s.length-1))]};
+ const p30=pct(B,.3),p70=pct(B,.7),p97=pct(B,.97),e86=pct(mag,.86),e92=pct(mag,.92),flat=pct(mag,.5);
+ const at=(x,y)=>clamp(Math.round(y),0,ah-1)*aw+clamp(Math.round(x),0,aw-1);
+ function chains(thr,maxLen){const vis=new Uint8Array(n),out=[];
+  for(let y=1;y<ah-1;y++)for(let x=1;x<aw-1;x++){if(vis[y*aw+x]||mag[y*aw+x]<thr)continue;const pts=[];let px=x,py=y;
+   for(let s=0;s<maxLen;s++){if(px<1||py<1||px>aw-2||py>ah-2)break;const j=at(px,py);if(mag[j]<thr*.6||(s>2&&vis[j]))break;
+    pts.push([px,py]);let dx=Math.cos(tan[j]),dy=Math.sin(tan[j]);if(pts.length>1){const q=pts[pts.length-2];if(dx*(px-q[0])+dy*(py-q[1])<0){dx=-dx;dy=-dy}}px+=dx;py+=dy}
+   for(const[qx,qy]of pts)for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)vis[at(qx+dx,qy+dy)]=1;
+   if(pts.length>=5)out.push(pts)}return out}
+ // 2b) şekiller: bulanık resimde 7 renge indir, komşu aynı renkli alanları tek şekil say
+ const r2=Math.max(2,Math.round(aw/45)),bl=new Float32Array(n*3);
+ {const Wd=aw+1,sat=[0,1,2].map(()=>new Float64Array(Wd*(ah+1)));
+  for(let y=0;y<ah;y++)for(let x=0;x<aw;x++)for(let c=0;c<3;c++){const T=sat[c];T[(y+1)*Wd+x+1]=d[(y*aw+x)*4+c]+T[y*Wd+x+1]+T[(y+1)*Wd+x]-T[y*Wd+x]}
+  for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){const x0=Math.max(0,x-r2),x1=Math.min(aw,x+r2+1),y0=Math.max(0,y-r2),y1=Math.min(ah,y+r2+1),ar=(x1-x0)*(y1-y0);
+   for(let c=0;c<3;c++){const T=sat[c];bl[(y*aw+x)*3+c]=(T[y1*Wd+x1]-T[y0*Wd+x1]-T[y1*Wd+x0]+T[y0*Wd+x0])/ar}}}
+ const K2=7,c2=[],l2=new Uint8Array(n);for(let j=0;j<K2;j++){const i=ord[Math.floor((j+.5)/K2*n)];c2.push([bl[i*3],bl[i*3+1],bl[i*3+2]])}
+ for(let it=0;it<8;it++){const sum=c2.map(()=>[0,0,0,0]);
+  for(let i=0;i<n;i++){const r=bl[i*3],g=bl[i*3+1],b=bl[i*3+2];let best=0,bd=1e9;for(let j=0;j<K2;j++){const c=c2[j],dd=(r-c[0])**2+(g-c[1])**2+(b-c[2])**2;if(dd<bd){bd=dd;best=j}}
+   l2[i]=best;const s=sum[best];s[0]+=r;s[1]+=g;s[2]+=b;s[3]++}
+  sum.forEach((s,j)=>{if(s[3])c2[j]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]})}
+ const comp=new Int32Array(n).fill(-1),regs=[],stack=new Int32Array(n);
+ for(let s0=0;s0<n;s0++){if(comp[s0]>=0)continue;const id=regs.length,Lb=l2[s0];let sp=0,area=0,sx=0,sy=0;stack[sp++]=s0;comp[s0]=id;
+  while(sp){const i=stack[--sp],x=i%aw,y=i/aw|0;area++;sx+=x;sy+=y;
+   if(x>0&&comp[i-1]<0&&l2[i-1]===Lb){comp[i-1]=id;stack[sp++]=i-1}if(x<aw-1&&comp[i+1]<0&&l2[i+1]===Lb){comp[i+1]=id;stack[sp++]=i+1}
+   if(y>0&&comp[i-aw]<0&&l2[i-aw]===Lb){comp[i-aw]=id;stack[sp++]=i-aw}if(y<ah-1&&comp[i+aw]<0&&l2[i+aw]===Lb){comp[i+aw]=id;stack[sp++]=i+aw}}
+  regs.push({id,area,mx:sx/area/aw,my:sy/area/ah,Lb})}
+ const objs=regs.filter(r=>r.area>=n*.004).sort((p,q)=>q.area-p.area).slice(0,24),rank=new Int16Array(regs.length).fill(-1);
+ objs.forEach((o,q)=>{rank[o.id]=q;const c=c2[o.Lb];o.hex='#'+hex2(c[0])+hex2(c[1])+hex2(c[2]);o.big=o.area>=n*.04;
+  const dk=o.my<.38?'üstte':o.my>.62?'altta':'ortada',yt=o.mx<.38?'solda':o.mx>.62?'sağda':'ortada';
+  o.ad=`${q+1}. şekil · ${renkAdi(o.hex).toLowerCase()}, ${dk===yt?dk:dk+' '+yt}, resmin %${Math.max(1,Math.round(o.area/n*100))} kadarı`});
+ // 3) kalıp: her aşamanın fırça darbeleri
+ const strokes=[],add=(s,tool,ci,size,op,pts)=>strokes.push({st:s,ob:-1,tool,ci,size,op,pts:pts.map(p=>[p[0]*sc,p[1]*sc])});
+ const along=(x,y,len,np)=>{const j=at(x,y),t=mag[j]<flat?0:tan[j],dx=Math.cos(t),dy=Math.sin(t),o=[];for(let q=0;q<np;q++){const f=(q/(np-1)-.5)*len;o.push([x+dx*f,y+dy*f])}return o};
+ const grid=(g,fn)=>{for(let y=g/2;y<ah;y+=g)for(let x=g/2;x<aw;x+=g){const jx=x+rnd(-g,g)*.3,jy=y+rnd(-g,g)*.3;fn(jx,jy,at(jx,jy),g)}};
+ // uzun fırça izi: tohum noktadan başlar, biçimin akış yönünü izler, renk değişince durur
+ const rgb=(x,y)=>{const j=at(x,y)*4;return[d[j],d[j+1],d[j+2]]};
+ const avg=(x,y,r)=>{let R=0,G=0,Bl=0,c=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const j=at(x+dx,y+dy)*4;R+=d[j];G+=d[j+1];Bl+=d[j+2];c++}return[R/c,G/c,Bl/c]};
+ const hx=c=>'#'+hex2(c[0])+hex2(c[1])+hex2(c[2]);
+ function flow(x,y,maxLen,step,r,cid=-1){const c0=avg(x,y,r),pts=[[x,y]];let j=at(x,y),t=mag[j]<flat?rnd(-.3,.3):tan[j],dx=Math.cos(t),dy=Math.sin(t);if(Math.random()<.5){dx=-dx;dy=-dy}
+  let px=x,py=y;for(let l=step;l<=maxLen;l+=step){px+=dx*step;py+=dy*step;if(px<0||py<0||px>aw-1||py>ah-1)break;if(cid>=0&&comp[at(px,py)]!==cid)break;const c=rgb(px,py);
+   if(Math.abs(c[0]-c0[0])+Math.abs(c[1]-c0[1])+Math.abs(c[2]-c0[2])>70)break;pts.push([px,py]);
+   j=at(px,py);if(mag[j]>=flat){let nx=Math.cos(tan[j]),ny=Math.sin(tan[j]);if(nx*dx+ny*dy<0){nx=-nx;ny=-ny}dx=dx*.5+nx*.5;dy=dy*.5+ny*.5;const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m}}
+  if(pts.length<2)pts.push([x+dx*step,y+dy*step]);return{pts,c:c0}}
+ const put=(s,tool,size,op,f,ob=-1)=>strokes.push({st:s,ob,tool,ci:lab[at(f.pts[0][0],f.pts[0][1])],h:hx(f.c),size,op,pts:f.pts.map(p=>[p[0]*sc,p[1]*sc])});
+ // yön alanı: kenar yönlerini geniş pencerede ortala; fırça izleri düzenli, aynı yöne aksın
+ const box=(src,r)=>{const Wd=aw+1,T=new Float64Array(Wd*(ah+1)),o=new Float32Array(n);
+  for(let y=0;y<ah;y++)for(let x=0;x<aw;x++)T[(y+1)*Wd+x+1]=src[y*aw+x]+T[y*Wd+x+1]+T[(y+1)*Wd+x]-T[y*Wd+x];
+  for(let y=0;y<ah;y++)for(let x=0;x<aw;x++){const x0=Math.max(0,x-r),x1=Math.min(aw,x+r+1),y0=Math.max(0,y-r),y1=Math.min(ah,y+r+1);o[y*aw+x]=(T[y1*Wd+x1]-T[y0*Wd+x1]-T[y1*Wd+x0]+T[y0*Wd+x0])/((x1-x0)*(y1-y0))}return o};
+ const rT=Math.max(2,Math.round(aw/50)),Jxx=box(GX.map(v=>v*v),rT),Jyy=box(GY.map(v=>v*v),rT),Jxy=box(GX.map((v,i)=>v*GY[i]),rT),ang=new Float32Array(n);
+ const eMed=pct(Jxx.map((v,i)=>v+Jyy[i]),.5);
+ for(let i=0;i<n;i++){const e=Jxx[i]+Jyy[i],df=Jxx[i]-Jyy[i],co=Math.sqrt(df*df+4*Jxy[i]*Jxy[i])/(e+1e-6);ang[i]=e<eMed*.6||co<.2?-0.45:.5*Math.atan2(2*Jxy[i],df)+Math.PI/2}
+ if(P.ang)for(let i=0;i<n;i++){const x=i%aw,y=i/aw|0;ang[i]=P.ang==='diag'?-0.5:P.ang==='horiz'?0:P.ang==='quant'?Math.round(ang[i]/(Math.PI/4))*(Math.PI/4):ang[i]+(Math.sin(x*14/aw)+Math.cos(y*11/ah))*.8}
+ // sanal tuval: her darbe buraya da işlenir; sonraki katman yalnızca tuvalin örnekten uzak kaldığı yere darbe koyar
+ const sim=new Float32Array(n*3);for(let i=0;i<n;i++){sim[i*3]=235;sim[i*3+1]=230;sim[i*3+2]=210}
+ const tgt=(i,soft)=>soft?[bl[i*3],bl[i*3+1],bl[i*3+2]]:[d[i*4],d[i*4+1],d[i*4+2]];
+ const err=(i,soft)=>{const t=tgt(i,soft);return Math.abs(t[0]-sim[i*3])+Math.abs(t[1]-sim[i*3+1])+Math.abs(t[2]-sim[i*3+2])};
+ const stamp=(x,y,r,c)=>{const x0=Math.max(0,Math.floor(x-r)),x1=Math.min(aw-1,Math.ceil(x+r)),y0=Math.max(0,Math.floor(y-r)),y1=Math.min(ah-1,Math.ceil(y+r)),rr=r*r;
+  for(let yy=y0;yy<=y1;yy++)for(let xx=x0;xx<=x1;xx++)if((xx-x)**2+(yy-y)**2<=rr){const i=(yy*aw+xx)*3;sim[i]=c[0];sim[i+1]=c[1];sim[i+2]=c[2]}};
+ function layer(st,tool,wA,T,o){const g=Math.max(2,wA*(o.sp||.8)),soft=!!o.soft;
+  for(let cy=0;cy<ah;cy+=g)for(let cx=0;cx<aw;cx+=g){let sum=0,c=0,best=-1,bi=0;const xe=Math.min(aw,cx+g),ye=Math.min(ah,cy+g);
+   for(let y=cy|0;y<ye;y++)for(let x=cx|0;x<xe;x++){const i=y*aw+x,e=err(i,soft);sum+=e;c++;if(e>best){best=e;bi=i}}
+   if(!c||sum/c<T)continue;const q=rank[comp[bi]];if(o.pick&&!o.pick(q))continue;
+   const x=bi%aw,y=bi/aw|0,c0=soft?tgt(bi,1):avg(x,y,wA>6?1:0),cid=o.inside?comp[bi]:-1;
+   let dx=Math.cos(ang[bi]),dy=Math.sin(ang[bi]);if(dx<0){dx=-dx;dy=-dy}
+   const step=Math.max(1,wA*.5),maxL=wA*(o.len||5)*rnd(.7,1.15);
+   const walk=(vx,vy,lim,out)=>{let px=x,py=y;for(let l=step;l<=lim;l+=step){px+=vx*step;py+=vy*step;if(px<0||py<0||px>aw-1||py>ah-1)break;const j=at(px,py);if(cid>=0&&comp[j]!==cid)break;
+     const t=tgt(j,soft),dc=Math.abs(t[0]-c0[0])+Math.abs(t[1]-c0[1])+Math.abs(t[2]-c0[2]);if(dc>(o.tol||60))break;if(st>1&&err(j,soft)<dc)break;out.push([px,py]);
+     let nx=Math.cos(ang[j]),ny=Math.sin(ang[j]);if(nx*vx+ny*vy<0){nx=-nx;ny=-ny}vx=vx*.6+nx*.4;vy=vy*.6+ny*.4;const m=Math.hypot(vx,vy)||1;vx/=m;vy/=m}};
+   const back=[],fwd=[];walk(-dx,-dy,maxL*.5,back);back.reverse();walk(dx,dy,maxL*.5,fwd);const all=[...back,[x,y],...fwd];
+   if(all.length<2)all.push([x+dx*step,y+dy*step]);
+   let len=0;for(let k=0;k<all.length;k++){stamp(all[k][0],all[k][1],wA*.38,c0);if(k)len+=Math.hypot(all[k][0]-all[k-1][0],all[k][1]-all[k-1][1])}
+   strokes.push({st,ob:o.ob?o.ob(q):-1,tool,ci:lab[bi],h:hx(c0),size:wA*sc*(tool==='ince'?.8:1),op:o.op||.97,len:o.full||P.flat?0:len*sc,pts:all.map(p=>[p[0]*sc,p[1]*sc])})}}
+ chains(e86,80).forEach(p=>add(0,'kalem',0,2.2,.8,p));
+ layer(1,'yassi',aw/11*P.w,12,{soft:1,len:7*P.len,tol:45,sp:.5,full:1});
+ layer(1,'yassi',aw/16*P.w,12,{soft:1,len:6*P.len,tol:45,sp:.6,full:1});
+ if(P.maxLayer>=2)layer(2,'yassi',aw/24*P.w,40*P.T,{len:6*P.len,inside:1,pick:q=>q>=0&&objs[q].big,ob:q=>q});
+ if(P.maxLayer>=3)layer(3,'yassi',aw/44*P.w,40*P.T,{len:6*P.len,inside:1,pick:q=>!(q>=0&&objs[q].big),ob:q=>q>=0?q:99});
+ if(P.maxLayer>=4)layer(4,'yassi',aw/75*P.w,30*P.T,{len:6*P.len});
+ if(P.maxLayer>=5)layer(5,'ince',aw/140*P.w,26*P.T,{len:7*P.len,tol:50});
+ if(P.outline)chains(e86,80).forEach(p=>strokes.push({st:6,ob:-1,tool:'ince',ci:0,h:P.outCol,size:Math.max(2.5,W/300)*P.outline,op:1,pts:p.map(v=>[v[0]*sc,v[1]*sc])}));
+ if(P.lines)chains(e92,60).forEach(p=>{const m=p[p.length>>1],q=at(m[0],m[1]);strokes.push({st:6,ob:-1,tool:'ince',ci:lab[q],h:hx(rgb(m[0],m[1])),size:Math.max(2.5,W/300),op:1,pts:p.map(v=>[v[0]*sc,v[1]*sc])})});
+ grid(aw/60,(x,y,j,g)=>{if(B[j]>=p97)put(7,'yassi',g*sc*1.1,1,flow(x,y,g*3,g*.5,0))});
+ if(Q.tool)for(const q of strokes)if(q.st>0){q.tool=Q.tool[q.tool]||q.tool;q.op*=Q.op||1}
+ strokes.sort((p,q)=>p.st-q.st||p.ob-q.ob||p.ci-q.ci);
+ // 4) altlık ve aşama maskeleri
+ const url=(fn)=>{const im=cx.createImageData(aw,ah);for(let i=0;i<n;i++){const c=fn(i);if(c){im.data[i*4]=c[0];im.data[i*4+1]=c[1];im.data[i*4+2]=c[2];im.data[i*4+3]=c[3]}}cx.putImageData(im,0,0);return cv.toDataURL()};
+ const Y=[255,217,0,95],sketchUrl=url(i=>mag[i]>=e86?[60,52,44,210]:0);
+ const masks=[null,null,null,null,null,null,url(i=>mag[i]>=e92?[255,217,0,200]:0),url(i=>B[i]>=p97?[255,217,0,110]:0)];
+ objs.forEach(o=>o.mask=url(i=>comp[i]===o.id?Y:0));const nBig=objs.filter(o=>o.big).length;
+ const steps=KALIP.map((kp,s)=>{const cnt=new Uint32Array(K);let m=0;for(const q of strokes)if(q.st===s){cnt[q.ci]++;m++}
+  const top=s?[...cnt.keys()].filter(j=>cnt[j]).map(j=>'c'+j):['c0'];
+  return{t:(s===2?nBig+' şekil · ':s===3?(objs.length-nBig)+' şekil · ':'')+m+' darbe',ad:kp.ad,tools:kp.tools,cols:top.length?top:['c'+(K-1)],reg:[],mask:masks[s],ref:0,ne:kp.ne}});
+ return{id:rec.id,ad:[rec.ad,M.id==='ozgun'?'':M.ad,Md.id==='yagli'?'':Md.ad].filter(Boolean).join(' · '),baseAd:rec.ad,style:M.id,medium:Md.id,custom:true,src:rec.src,thumb:rec.src,alt:`Senin resmin · ${M.id==='ozgun'?'':M.ad+' · '}8 aşama · ${strokes.length} fırça darbesi`,vb:`0 0 ${W} ${H}`,W,H,size:'ozel',ground:Q.ground||'ekru',
+  teknik:[['Kalıp','Eskiz, altlık boya, büyük şekiller, küçük şekiller, biçimleri toplama, ince ayrıntılar, çizgiler, son ışıklar.'],['Analiz',`${objs.length} şekil, ${K} boya, ${strokes.length} fırça darbesi çıkarıldı.`],['Zemin','Ekru tuval; eskiz resmin kenar çizgilerinden.']],
+  colors,shapes:{},lines:[],sketch:[],steps,strokes,sketchUrl,objs};
+}
+async function addFiles(files){renderExamples(true);let last=null;
+ for(const f of files){try{const raw=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
+   const img=await loadImg(raw),k=Math.min(1,1200/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+   c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+   const rec={id:'ozel'+Date.now()+Math.round(rnd(0,999)),ad:f.name.replace(/\.[^.]+$/,''),src:c.toDataURL('image/jpeg',.88)};
+   EXAMPLES.push(await analyze(rec));await DB.put(rec);last=rec.id}catch(e){console.error(e);alert(`"${f.name}" açılamadı. Bir resim dosyası seçtiğinden emin ol.`)}}
+ renderExamples();if(last)$('#exCards').children[EXAMPLES.length-1].scrollIntoView({block:'center'})}
+$('#file').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(fs.length)addFiles(fs)};
+async function removeUser(id){if(!confirm('Bu resim kütüphaneden silinsin mi?'))return;
+ if(S.ex===id){S.dirty=false;setExample('manzara')}EXAMPLES.splice(EXAMPLES.findIndex(e=>e.id===id),1);await DB.del(id);renderExamples()}
+async function loadUser(){const recs=await DB.all()||[];for(const r of recs){try{EXAMPLES.push(await analyze(r))}catch(e){console.warn(e)}}if(recs.length&&S.screen===0)renderExamples()}
+
+/* otomatik boyama gösterisi */
+const D={i:0,cur:null,pi:0,playing:false,mask:null,timer:0},dcv=$('#demo'),dctx=dcv.getContext('2d'),lcv=$('#layer'),lctx=lcv.getContext('2d');
+function layerShow(st,ci,lim){const c=COLORS[ci],v=(h,k)=>parseInt(h.slice(k,k+2),16),ss=EX.strokes,sx=lcv.width/EX.W,sy=lcv.height/EX.H,f=ss.find(q=>q.st===st&&(!st||q.ci===ci))||ss.find(q=>q.st===st);
+ lctx.globalAlpha=1;lctx.globalCompositeOperation='source-over';lctx.drawImage($('#ground'),0,0,lcv.width,lcv.height);
+ $('#layerCap').textContent=st?`RENK KATMANI · ${c.ad} · RGB ${v(c.hex,1)}, ${v(c.hex,3)}, ${v(c.hex,5)} · ${STEPS[st].ad}`:'KATMAN · Eskiz · kurşun kalem';
+ for(let j=0;j<ss.length&&j<lim;j++){const s=ss[j];if(s.st!==st||(st&&s.ci!==ci))continue;const pal=COLORS[s.ci].hex,k=Stroke(lctx,s.tool,s.h&&pal===EX.colors[s.ci].hex?s.h:pal,s.size*sx,s.op,(s.len||0)*sx);for(const p of s.pts)k.move(p[0]*sx,p[1]*sy);k.end()}
+ const lg=$('#layerLegend');lg.innerHTML=`<b>BU KATMANIN FIRÇASI</b>${f?`${tool(f.tool).ad}, ${Math.round(f.size)} px`:'Bu katmanda darbe yok'}<b style="margin-top:8px">${STEPS[st].ad.toUpperCase()} AŞAMASININ RENK KATMANLARI · sürülme sırasıyla</b><div class="lc">${st?STEPS[st].cols.map(id=>{const q=col(id);return`<button data-ci="${id.slice(1)}" class="${+id.slice(1)===ci?'on':''}"><i style="background:${q.hex}"></i><span>${q.ad}<small>RGB ${v(q.hex,1)}, ${v(q.hex,3)}, ${v(q.hex,5)}</small></span></button>`}).join(''):'<div>Kurşun kalem grisi</div>'}</div>`;
+ lg.querySelectorAll('button').forEach(bt=>bt.onclick=()=>{if(D.playing)return;layerShow(st,+bt.dataset.ci,Infinity);D.lshow='b'});
+ D.lshow=st+':'+ci}
+function layerBrowse(st){const ss=EX.strokes,prog=!!ss[D.i]&&ss[D.i].st===st,ci=prog?ss[D.i].ci:st?+STEPS[st].cols[0].slice(1):0;layerShow(st,ci,prog?D.i:Infinity);D.lshow='b'}
+function demoGround(){dctx.globalAlpha=1;dctx.globalCompositeOperation='source-over';dctx.drawImage($('#ground'),0,0,dcv.width,dcv.height)}
+function demoInfo(s,baslik){const c=COLORS[s.ci],v=k=>parseInt(c.hex.slice(k,k+2),16),o=EX.objs[s.ob];
+ return `<div class="info"><b>${baslik}</b><span>Katman: ${STEPS[s.st].ad}</span>${o?`<span>Şekil: ${o.ad}</span>`:s.ob===99?'<span>Şekil: kalan küçük şekiller</span>':''}<span>Fırça: ${tool(s.tool).ad}, ${Math.round(s.size)} px</span>${s.st?`<span class="renk"><i style="background:${c.hex}"></i><span>Boya: ${c.ad}<small>RGB ${v(1)}, ${v(3)}, ${v(5)} · ${c.hex.toUpperCase()}</small></span></span>`:'<span>Boya: kurşun kalem grisi</span>'}</div>`}
+function demoStop(){clearInterval(D.timer);D.playing=false;if(D.cur){D.cur.end();D.cur2.end();D.cur=null;D.i++}const b=$('#demoPlay');if(b)b.textContent=D.i?'▶ Devam et':'▶ Gösteriyi oynat'}
+function demoResume(){clearInterval(D.timer);const nx=EX.strokes[D.i];if(nx&&D.lshow!==nx.st+':'+nx.ci)layerShow(nx.st,nx.ci,D.i);D.playing=true;D.go=true;$('#demoPlay').textContent='⏸ Duraklat';setTimeout(demoFrame,16)}
+function demoWait(pv,s,nA,nO){D.playing=false;if(nA){S.done.add(pv.st);renderSteps()}
+ const sonra=nA?`Sonraki aşama: ${STEPS[s.st].ad}`:nO?(EX.objs[s.ob]?`Sonraki şekil: ${s.ob+1}.`:'Sonraki: kalan küçük şekiller'):`Sonraki boya: ${COLORS[s.ci].ad}`;
+ const biten=nA?STEPS[pv.st].ad+' aşaması':nO&&EX.objs[pv.ob]?(pv.ob+1)+'. şekil':COLORS[pv.ci].ad;let left=+$('#sure').value;
+ const yaz=()=>{$('#demoPlay').textContent=sonra+(left?` → (${left})`:' →');
+  $('#demoNow').innerHTML=`${biten} bitti. ${left?`${left} saniye bekleniyor; şimdi sen boya. Beklemeden geçmek için düğmeye bas.`:'Sen de boya; devam etmek için düğmeye bas.'}`+demoInfo(s,'SIRADAKİ')};
+ yaz();clearInterval(D.timer);if(left)D.timer=setInterval(()=>{left--;if(left<=0)demoResume();else yaz()},1000)}
+function demoFrame(){if(!D.playing)return;const ss=EX.strokes,sx=dcv.width/EX.W,sy=dcv.height/EX.H;let budget=+$('#speed').value,s;
+ while(budget>0&&D.i<ss.length){s=ss[D.i];
+  if(!D.cur){const pv=ss[D.i-1],w=$('#wait').value,nA=!!pv&&pv.st!==s.st,nO=!!pv&&!nA&&pv.ob!==s.ob,nR=!!pv&&!nA&&!nO&&pv.ci!==s.ci&&s.st>0;
+   if(pv&&!D.go&&w!=='yok'&&(nA||(nO&&w!=='asama')||(nR&&w==='renk')))return demoWait(pv,s,nA,nO);
+   D.go=false;const m=EX.objs[s.ob]?EX.objs[s.ob].mask:null,mc=m!==D.mask;D.mask=m;
+   if(D.lshow!==s.st+':'+s.ci)layerShow(s.st,s.ci,D.i);
+   if(s.st!==S.step){for(let q=0;q<s.st;q++)S.done.add(q);goStep(s.st)}else if(mc)renderGuide();
+   if(!pv||nA||nO||nR){setColor('c'+s.ci);$('#demoNow').innerHTML=demoInfo(s,'ŞİMDİ BOYANIYOR')}
+   const pal=COLORS[s.ci].hex;D.cur=Stroke(dctx,s.tool,s.h&&pal===EX.colors[s.ci].hex?s.h:pal,s.size*sx,s.op,(s.len||0)*sx);D.cur2=Stroke(lctx,s.tool,s.h&&pal===EX.colors[s.ci].hex?s.h:pal,s.size*sx,s.op,(s.len||0)*sx);D.pi=0}
+  const p=s.pts[D.pi++];D.cur.move(p[0]*sx,p[1]*sy);D.cur2.move(p[0]*sx,p[1]*sy);budget--;
+  if(D.pi>=s.pts.length){D.cur.end();D.cur2.end();D.cur=null;D.i++}}
+ if(s)$('#demoProg').textContent=`darbe ${Math.min(D.i+1,ss.length)} / ${ss.length}`;
+ if(D.i>=ss.length){D.playing=false;D.mask=null;STEPS.forEach((_,q)=>S.done.add(q));renderGuide();renderSteps();$('#demoPlay').textContent='✓ Bitti';$('#demoNow').textContent='Örnek bitti. Baştan oynatabilir ya da kendi tuvalinde devam edebilirsin.';$('#demoProg').textContent='';return}
+ setTimeout(demoFrame,16)}
+function demoRedraw(n){demoGround();const ss=EX.strokes,sx=dcv.width/EX.W,sy=dcv.height/EX.H;
+ for(let j=0;j<n&&j<ss.length;j++){const s=ss[j],pal=COLORS[s.ci].hex,k=Stroke(dctx,s.tool,s.h&&pal===EX.colors[s.ci].hex?s.h:pal,s.size*sx,s.op,(s.len||0)*sx);for(const p of s.pts)k.move(p[0]*sx,p[1]*sy);k.end()}}
+// Geri: bekleme ayarına göre (renk, şekil ya da aşama) bir önceki adımın başına döner
+function demoBack(){const ss=EX.strokes;if(!ss||!ss.length)return;demoStop();if(D.i<=0)return;
+ const w=$('#wait').value,same=(a,b)=>a.st===b.st&&(w==='asama'||w==='yok'||a.ob===b.ob)&&(w!=='renk'||a.ci===b.ci||a.st===0);
+ let t=Math.min(D.i,ss.length)-1;while(t>0&&same(ss[t-1],ss[t]))t--;
+ D.i=t;D.cur=null;D.mask=null;D.lshow=null;demoRedraw(t);const s=ss[t];S.done=new Set();for(let q=0;q<s.st;q++)S.done.add(q);
+ goStep(s.st);setColor('c'+s.ci);$('#demoPlay').textContent=t?'▶ Devam et':'▶ Gösteriyi oynat';
+ $('#demoNow').innerHTML='Bir adım geri alındı. Devam edince buradan boyanır.'+demoInfo(s,'SIRADAKİ');$('#demoProg').textContent=`darbe ${t} / ${ss.length}`}
+function demoHalt(){const bekliyordu=!D.playing&&D.i>0&&D.i<EX.strokes.length;demoStop();if(D.i>0&&D.i<EX.strokes.length){$('#demoPlay').textContent='▶ Devam et';
+  $('#demoNow').innerHTML='Durduruldu. Devam etmek için üstteki düğmeye bas.'+demoInfo(EX.strokes[D.i],'SIRADAKİ')}}
+function demoReset(){demoStop();demoGround();D.i=0;D.lshow=null;D.mask=null;S.done=new Set();goStep(0);$('#demoPlay').textContent='▶ Gösteriyi oynat';$('#demoNow').textContent='Uygulama her katmandan önce hangi fırçayı ve hangi boyayı kullanacağını gösterir, sonra boyar.';$('#demoProg').textContent=''}
+
+/* ---------- ekran 1: aletler ---------- */
+function drawDemo(cv,id){const c=cv.getContext('2d');cv.width=540;cv.height=140;
+ if(id==='harman'||id==='silgi'){const s=Stroke(c,'yassi','#3d6b2c',70,.9);for(let x=40;x<=500;x+=8)s.move(x,70+Math.sin(x/60)*18);s.end();
+  const s2=Stroke(c,'yassi','#e5b422',40,.9);for(let x=40;x<=500;x+=8)s2.move(x,55+Math.sin(x/60)*18);s2.end();}
+ const t=tool(id),hex={kalin:'#14261a',kucuk:'#d9a400',ince:'#2a1c16',yassi:'#3d97d3',spatula:'#e3c680',sulu:'#3d97d3',kuru:'#c2185b',pastel:'#e07a1f',soft:'#8fb44e'}[id]||'#000';
+ const s=Stroke(c,id,hex,id==='harman'||id==='silgi'?50:t.size*(id==='kalem'?1.5:.9),t.op/100);
+ if(id==='harman'){for(let k=0;k<4;k++){const s3=Stroke(c,id,hex,60,.7);for(let y=20;y<=120;y+=5)s3.move(150+k*80,k%2?140-y:y);s3.end()}return}
+ for(let i=0,x=30;x<=510;i++){s.move(x,70+Math.sin(x/55)*28);x+=id==='ince'?3+i*.45:7}s.end();}
+function renderTools(){const el=$('#toolCards');el.innerHTML='';
+ TOOLS.forEach(t=>{const d=document.createElement('div');d.className='card '+(S.kit.has(t.id)?'on':'off');
+  d.innerHTML=`<canvas></canvas><div class="tick">✓</div><h3>${t.ad}</h3><p>${t.not}</p>`;
+  d.onclick=()=>{if(S.kit.has(t.id)){if(S.kit.size>1)S.kit.delete(t.id)}else S.kit.add(t.id);d.className='card '+(S.kit.has(t.id)?'on':'off')};
+  el.append(d);drawDemo(d.querySelector('canvas'),t.id)});}
+
+/* ---------- ekran 2: boyalar ---------- */
+function renderColors(){const el=$('#colorRows');el.innerHTML='';
+ COLORS.forEach(c=>{const d=document.createElement('div');d.className='crow'+(c.on?'':' off');
+  d.innerHTML=`<input type="color" value="${c.hex}" aria-label="Renk"><div style="flex:1"><input type="text" value="${c.ad}" aria-label="Boya adı"><small>${c.yer||'Kendi rengin.'}</small></div><label><input type="checkbox" ${c.on?'checked':''}> palette</label>`;
+  const[ci,ti,ch]=d.querySelectorAll('input');ci.oninput=()=>c.hex=ci.value;ti.oninput=()=>c.ad=ti.value;
+  ch.onchange=()=>{c.on=ch.checked;d.classList.toggle('off',!c.on)};el.append(d)});}
+$('#addColor').onclick=()=>{COLORS.push({id:'ozel'+Date.now(),ad:'Yeni renk',hex:'#888888',yer:'',on:true});renderColors();$('#colorRows').lastChild.scrollIntoView({block:'center'})};
+
+/* ---------- ekran 3: tuval ---------- */
+function renderOpts(){
+ const a=$('#optSize');a.innerHTML='';SIZES.forEach(z=>{const d=document.createElement('div');d.className='opt'+(S.sizeId===z.id?' on':'');
+  d.innerHTML=`<div class="sw" style="width:${44*z.w/Math.max(z.w,z.h)}px;height:${44*z.h/Math.max(z.w,z.h)}px;background:${GROUNDS.find(g=>g.id===S.ground).hex}"></div><b>${z.ad}</b><small>${z.w}×${z.h} ${z.not}</small>`;
+  d.onclick=()=>{S.sizeId=z.id;renderOpts()};a.append(d)});
+ const b=$('#optGround');b.innerHTML='';GROUNDS.forEach(g=>{const d=document.createElement('div');d.className='opt'+(S.ground===g.id?' on':'');
+  d.innerHTML=`<div class="sw" style="background:${g.hex}"></div><b>${g.ad}</b><small>${g.not}&nbsp;</small>`;d.onclick=()=>{S.ground=g.id;renderOpts()};b.append(d)});}
+$('#optTexture').onchange=e=>S.texture=e.target.checked;
+$('#optGuide').onchange=e=>S.guide=e.target.checked;
+
+/* ---------- ekran 4: atölye ---------- */
+const gcv=$('#ground'),pcv=$('#paint'),pctx=pcv.getContext('2d',{willReadFrequently:true}),wrap=$('#wrap');
+let undo=[],redo=[];
+function buildCanvas(){
+ const z=SIZES.find(s=>s.id===S.sizeId);
+ const key=z.id+z.w+'x'+z.h;
+ if(S.built!==key){if(S.built&&S.dirty&&!confirm('Tuval boyutu değişti. Mevcut resim silinsin mi?')){S.sizeId=S.builtId;return buildCanvas()}
+  demoStop();D.i=0;gcv.width=pcv.width=dcv.width=lcv.width=z.w;gcv.height=pcv.height=dcv.height=lcv.height=z.h;undo=[];redo=[];S.dirty=false;S.built=key;S.builtId=z.id}
+ for(const el of[wrap,$('#dwrap'),$('#lwrap')]){el.style.aspectRatio=z.w+'/'+z.h;el.style.width=`min(100%, calc((100vh - 215px) * ${z.w/z.h}))`}
+ $('#demoEasel').hidden=$('#layerEasel').hidden=!EX.custom;$('#myEasel').hidden=!!EX.custom;document.querySelector('.studio').classList.toggle('custom',!!EX.custom);$('#layerLegend').hidden=!EX.custom;renderAkim();
+ const g=gcv.getContext('2d');g.fillStyle=GROUNDS.find(x=>x.id===S.ground).hex;g.fillRect(0,0,z.w,z.h);
+ if(S.texture){g.globalAlpha=.05;g.fillStyle='#000';for(let y=0;y<z.h;y+=3)g.fillRect(0,y,z.w,1);for(let x=0;x<z.w;x+=3)g.fillRect(x,0,1,z.h);
+  g.globalAlpha=.06;for(let i=0;i<z.w*z.h/40;i++){g.fillStyle=Math.random()<.5?'#fff':'#000';g.fillRect(rnd(0,z.w),rnd(0,z.h),1.5,1.5)}g.globalAlpha=1}
+ if(!D.i){demoGround();if(EX.custom)layerBrowse(S.step)}
+ renderGuide();
+}
+function renderGuide(){const st=STEPS[S.step],svg=$('#guide');svg.style.display=S.guide?'':'none';svg.setAttribute('viewBox',EX.vb);
+ if(EX.custom){const im=u=>`<image href="${u}" width="${EX.W}" height="${EX.H}" preserveAspectRatio="none"/>`;const mk=D.mask||st.mask;svg.innerHTML=`<g opacity=".3">${im(EX.sketchUrl)}</g>`+(mk?im(mk):'');return}
+ const all=new Set([...SKETCH,...st.reg]);
+ svg.innerHTML=[...all].map(k=>`<path d="${SHAPES[k]}" class="sk${LINES.includes(k)?' line':''}${st.reg.includes(k)?' hi':''}"/>`).join('');}
+function renderToolList(){const el=$('#toolList');el.innerHTML='';const rec=STEPS[S.step].tools;
+ TOOLS.filter(t=>S.kit.has(t.id)).forEach(t=>{const b=document.createElement('button');b.className='tool'+(S.tool===t.id?' on':'')+(rec.includes(t.id)?' rec':'');
+  b.textContent=t.ad;b.onclick=()=>setTool(t.id);el.append(b)});
+ const t=tool(S.tool),sz=$('#size'),op=$('#op');sz.min=t.min;sz.max=t.max;sz.value=S.size[t.id];op.value=S.op[t.id];
+ $('#sizeV').textContent=S.size[t.id];$('#opV').textContent=S.op[t.id]+'%';}
+function setTool(id){if(!S.kit.has(id))return;S.tool=id;renderToolList()}
+function renderPalette(){const el=$('#palette');el.innerHTML='';const rec=STEPS[S.step].cols;
+ COLORS.filter(c=>c.on).forEach(c=>{const b=document.createElement('button');b.className='swatch'+(S.color===c.id?' on':'')+(rec.includes(c.id)?' rec':'');
+  b.style.background=c.hex;b.title=c.ad;b.setAttribute('aria-label',c.ad);b.onclick=()=>setColor(c.id);el.append(b)});
+ const c=col(S.color);$('#curname').textContent=c?`${c.ad} · ${c.yer}`:'';}
+function setColor(id){S.color=id;renderPalette()}
+function renderSteps(){const st=STEPS[S.step];
+ $('#prog').style.width=(S.done.size/STEPS.length*100)+'%';
+ $('#stepNow').innerHTML=`${REF||EX.custom?`<img src="${EX.custom?EX.src:`ref/${EX.id}/r${String(st.ref).padStart(2,'0')}.jpg`}" alt="Ressamın bu andaki tuvali" onerror="this.remove()">`:''}<div class="t">Adım ${S.step+1}/${STEPS.length} · ${st.t}</div><h3>${st.ad}</h3><p>${st.ne}</p>
+  <div class="chips">${st.tools.map(i=>`<button class="chip" data-tool="${i}">${tool(i).ad}</button>`).join('')}</div>
+  <div class="chips">${st.cols.map(i=>{const c=col(i);return c?`<button class="chip" data-col="${i}"><i style="background:${c.hex}"></i>${c.ad}</button>`:''}).join('')}</div>`;
+ $('#stepNow img')?.addEventListener('click',e=>e.target.classList.toggle('big'));
+ $('#stepNow').querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+ $('#stepNow').querySelectorAll('[data-col]').forEach(b=>b.onclick=()=>setColor(b.dataset.col));
+ const ul=$('#stepList');ul.innerHTML='';STEPS.forEach((s,i)=>{const li=document.createElement('li');li.className=(i===S.step?'on ':'')+(S.done.has(i)?'done':'');
+  li.innerHTML=`<b>${i+1}. ${s.ad}</b><span>${s.t}</span>`;li.onclick=()=>goStep(i);ul.append(li)});
+ const on=ul.querySelector('.on');if(on)ul.scrollTop=on.offsetTop-ul.offsetTop-ul.clientHeight/2;
+ $('#prev').disabled=S.step===0;$('#next').textContent=S.step===STEPS.length-1?'Resmi bitir ✓':'Adımı bitir →';}
+function goStep(i){S.step=clamp(i,0,STEPS.length-1);const st=STEPS[S.step];
+ const t=st.tools.find(x=>S.kit.has(x));if(t)S.tool=t;const c=st.cols.find(x=>col(x)?.on);if(c)S.color=c;
+ renderSteps();renderToolList();renderPalette();renderGuide();if(EX.custom&&!D.playing&&S.built)layerBrowse(S.step)}
+$('#prev').onclick=()=>goStep(S.step-1);
+$('#next').onclick=()=>{S.done.add(S.step);if(S.step<STEPS.length-1)goStep(S.step+1);else{S.guide=false;renderGuide();renderSteps()}};
+$('#size').oninput=e=>{S.size[S.tool]=+e.target.value;$('#sizeV').textContent=e.target.value};
+$('#op').oninput=e=>{S.op[S.tool]=+e.target.value;$('#opV').textContent=e.target.value+'%'};
+$('#demoPlay').onclick=()=>{if(D.playing)return demoStop();if(D.i>=EX.strokes.length)demoReset();demoResume()};
+$('#demoReset').onclick=demoReset;$('#demoBack').onclick=demoBack;$('#demoStopBtn').onclick=demoHalt;
+$('#toggleGuide').onclick=()=>{S.guide=!S.guide;$('#optGuide').checked=S.guide;renderGuide()};
+
+/* çizim */
+let cur=null;
+function pos(e){const r=pcv.getBoundingClientRect();return[(e.clientX-r.left)*pcv.width/r.width,(e.clientY-r.top)*pcv.height/r.height]}
+function snap(){return pctx.getImageData(0,0,pcv.width,pcv.height)}
+wrap.addEventListener('pointerdown',e=>{if(e.button)return;e.preventDefault();wrap.setPointerCapture(e.pointerId);
+ undo.push(snap());if(undo.length>20)undo.shift();redo=[];S.dirty=true;
+ const c=col(S.color);cur=Stroke(pctx,S.tool,c?c.hex:'#000',S.size[S.tool],S.op[S.tool]/100);
+ const[x,y]=pos(e);cur.move(x,y,e.pressure,e.pointerType==='pen');
+ if(['ince','kalem','fuzen','silgi'].includes(S.tool))cur.move(x+.8,y+.8,e.pressure,e.pointerType==='pen');});
+wrap.addEventListener('pointermove',e=>{if(!cur)return;const pen=e.pointerType==='pen';
+ for(const ev of(e.getCoalescedEvents?.().length?e.getCoalescedEvents():[e])){const[x,y]=pos(ev);cur.move(x,y,ev.pressure,pen)}});
+const stop=()=>{if(cur){cur.end();cur=null}};
+wrap.addEventListener('pointerup',stop);wrap.addEventListener('pointercancel',stop);
+$('#undo').onclick=()=>{if(undo.length){redo.push(snap());pctx.putImageData(undo.pop(),0,0)}};
+$('#redo').onclick=()=>{if(redo.length){undo.push(snap());pctx.putImageData(redo.pop(),0,0)}};
+$('#clear').onclick=()=>{if(confirm('Tüm boya silinsin mi? (Geri al ile döndürebilirsin.)')){undo.push(snap());pctx.clearRect(0,0,pcv.width,pcv.height)}};
+$('#save').onclick=()=>{const c=document.createElement('canvas');c.width=pcv.width;c.height=pcv.height;const x=c.getContext('2d');if(EX.custom)x.drawImage(dcv,0,0);else{x.drawImage(gcv,0,0);x.drawImage(pcv,0,0)}
+ c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=EX.id+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)},'image/png')};
+addEventListener('keydown',e=>{if(S.screen!==4||e.target.matches('input[type=text]'))return;
+ if(e.ctrlKey&&e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('#redo'):$('#undo')).click()}
+ if(e.key==='['||e.key===']'){const t=tool(S.tool);S.size[t.id]=clamp(S.size[t.id]+(e.key==='['?-4:4),t.min,t.max);renderToolList()}});
+
+/* ---------- gezinme ---------- */
+const TABS=['1 Örnek','2 Aletler','3 Boyalar','4 Tuval','5 Çizim'];
+function go(i){S.screen=i;document.querySelectorAll('.screen').forEach((s,k)=>s.classList.toggle('on',k===i));
+ $('#tabs').innerHTML='';TABS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.className=k===i?'on':'';b.onclick=()=>go(k);$('#tabs').append(b)});
+ if(i===0)renderExamples();if(i===1)renderTools();if(i===2)renderColors();if(i===3)renderOpts();
+ if(i===4){if(!S.kit.has(S.tool))S.tool=[...S.kit][0];if(!col(S.color)?.on)S.color=COLORS.find(c=>c.on)?.id;buildCanvas();
+  if(!S.dirty&&!S.done.size)goStep(S.step);else{renderSteps();renderToolList();renderPalette()}}
+ scrollTo(0,0);}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+
+/* ---------- büyüteç: bir resmin üstüne gelince 4 kat büyüt ---------- */
+const ZB=document.createElement('canvas');ZB.id='zoomBox';document.body.append(ZB);
+let zSrc=null;
+function zoomOK(t){return t&&(t.tagName==='IMG'||t.tagName==='CANVAS')&&t!==ZB&&!t.closest('#intro')&&!t.closest('#wrap')}
+function zoomDraw(e){const t=zSrc;if(!t||!t.isConnected)return zoomHide();const r=t.getBoundingClientRect(),nw=t.naturalWidth||t.width,nh=t.naturalHeight||t.height;if(!nw||!nh||!r.width)return zoomHide();
+ const K=4,vw=innerWidth,vh=innerHeight,w=r.width,h=t.tagName==='IMG'&&getComputedStyle(t).objectFit==='cover'?r.width*nh/nw:r.height;
+ const pw=Math.min(w*K,vw*.62),ph=Math.min(h*K,vh*.86),fw=pw/(w*K),fh=ph/(h*K);
+ const fx=clamp((e.clientX-r.left)/r.width,0,1),fy=clamp((e.clientY-r.top)/r.height,0,1),sx=clamp(fx-fw/2,0,1-fw)*nw,sy=clamp(fy-fh/2,0,1-fh)*nh;
+ const dpr=Math.min(2,devicePixelRatio||1);if(ZB.width!==Math.round(pw*dpr)||ZB.height!==Math.round(ph*dpr)){ZB.width=Math.round(pw*dpr);ZB.height=Math.round(ph*dpr)}
+ ZB.style.width=pw+'px';ZB.style.height=ph+'px';const c=ZB.getContext('2d');c.imageSmoothingQuality='high';
+ try{c.drawImage(t,sx,sy,fw*nw,fh*nh,0,0,ZB.width,ZB.height)}catch(_){return zoomHide()}
+ let x=r.right+12;if(x+pw>vw-8)x=r.left-12-pw;if(x<8)x=e.clientX<vw/2?vw-pw-8:8;
+ ZB.style.left=x+'px';ZB.style.top=clamp(e.clientY-ph/2,8,Math.max(8,vh-ph-8))+'px';ZB.style.display='block'}
+function zoomHide(){zSrc=null;ZB.style.display='none'}
+document.addEventListener('mouseover',e=>{if(zoomOK(e.target)){zSrc=e.target;zoomDraw(e)}});
+document.addEventListener('mousemove',e=>{if(zSrc){if(e.target===zSrc)zoomDraw(e);else zoomHide()}});
+document.addEventListener('mouseout',e=>{if(e.target===zSrc)zoomHide()});
+addEventListener('scroll',zoomHide,true);addEventListener('blur',zoomHide);
+setExample('manzara');go(0);loadUser();
+$('#home').onclick=()=>go(0);
+$('#enter').onclick=()=>{const el=$('#intro');el.classList.add('out');go(0);setTimeout(()=>el.remove(),700)};
+</script>
+</body>
+</html>
